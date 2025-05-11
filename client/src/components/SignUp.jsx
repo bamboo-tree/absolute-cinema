@@ -1,8 +1,18 @@
 import { useState } from "react";
 import '../styles/form.css'
 
+/*
+
+  TODO: 
+  - Check if user account already exists
+  - Login page button
+
+*/
+
+
 function SignUp() {
 
+  // objects with form data and validation messages
   const [formData, setFormData] = useState({
     USERNAME: "",
     FIRSTNAME: "",
@@ -17,9 +27,11 @@ function SignUp() {
     LASTNAME: "",
     EMAIL: "",
     PASSWORD: "",
-    VERIFYPASSWORD: ""
+    VERIFYPASSWORD: "",
+    SUBMIT: ""
   });
 
+  // for reset button
   const clearData = () => {
     setFormData({
       USERNAME: "",
@@ -29,9 +41,18 @@ function SignUp() {
       PASSWORD: "",
       VERIFYPASSWORD: ""
     })
+    setValidation({
+      USERNAME: "",
+      FIRSTNAME: "",
+      LASTNAME: "",
+      EMAIL: "",
+      PASSWORD: "",
+      VERIFYPASSWORD: "",
+      SUBMIT: ""
+    })
   }
 
-
+  // upadte values in useState object
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -40,6 +61,7 @@ function SignUp() {
     }));
   };
 
+  // validation function for every input field
   const validateField = (fieldName, value) => {
     let error = "";
     let regex;
@@ -110,21 +132,41 @@ function SignUp() {
       }
     }
 
+    // update validation message to coresponding input field
     setValidation(prev => ({
       ...prev,
       [fieldName]: error
     }));
   };
 
+  // validate form after unfocusing input field
   const handleBlur = (e) => {
     const { name, value } = e.target;
     validateField(name, value);
   };
 
-  
+  // 
+  const sendData = () => {
+    // validate all input fileds
+    Object.keys(formData).forEach((key) => {
+      validateField(key, formData[key])
+    })
+
+    // check validation messages
+    Object.values(validation).forEach((value) => {
+      if(value !== ""){
+        setValidation(prev => ({
+          ...prev,
+          SUBMIT: "Can't create new account. The form contains errors."
+        }));
+      }
+    })
+  }
+
+
   return(
     <div>
-      <form action="" method="POST">
+      <form action={sendData} method="POST">
         <div className="form-section">
         <h1>Create new account</h1>
           <div className="form-group">
@@ -172,6 +214,7 @@ function SignUp() {
           <div className="button-group">
             <button type="submit-signup-form" className="green-button">Create account</button>
             <button type="reset" className="red-button" onClick={clearData}>Clear</button>
+            <label className="validation-error">{validation.SUBMIT}</label>
           </div>
         </div>
       </form>
