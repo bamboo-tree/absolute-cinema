@@ -145,7 +145,7 @@ function SignUp() {
     validateField(name, value);
   };
 
-  // 
+  // submit button handler
   const sendData = () => {
     // validate all input fileds
     Object.keys(formData).forEach((key) => {
@@ -212,7 +212,7 @@ function SignUp() {
             <label className="validation-error">{validation.VERIFYPASSWORD}</label>
           </div>
           <div className="button-group">
-            <button type="submit-signup-form" className="green-button">Create account</button>
+            <button type="submit" name="submit-signup-form" className="green-button">Create account</button>
             <button type="reset" className="red-button" onClick={clearData}>Clear</button>
             <label className="validation-error">{validation.SUBMIT}</label>
           </div>
