@@ -1,0 +1,1 @@
+![Construction Site Warning Sign](./assets/sign-warning-construction.png)
