@@ -1,24 +1,20 @@
-import { BrowserRouter, Route, Redirect } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import SignUp from "./components/SignUp";
 import Login from "./components/Login";
 
 
 function App() {
+
+  const user = localStorage.getItem('token')
+
   return (
-    <BrowserRouter>
-      {/* <Route exact path="/" component={Home} /> */}
+    <Routes>
+      {/* {user && <Route path="/" element={<Main />} />} */}
       <Route path="/login" exact element={<Login />} />
       <Route path="/" element={<Navigate replace to="/login" />} />
       <Route path="/register" exact element={<SignUp />} />
-      {/* <PrivateRoute path="/dashboard" component={Dashboard} /> */}
-    </BrowserRouter>
+    </Routes>
   );
 }
-
-// const PrivateRoute = ({ component: Component, ...rest }) => {
-//   <Route {...rest} render={ props => (
-//     isAuthenticated() ? <Component {...props} /> : <Redirect to="/login"/>
-//   )} />
-// };
 
 export default App;
