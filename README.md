@@ -1,1 +1,0 @@
-![Construction Site Warning SIgn](./github/sign-warning-construction.png)
