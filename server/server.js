@@ -3,14 +3,16 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const connection = require('./database')
-const commonRoutes = require('./routes/common')
+const testRoute = require('./routes/test')
+const commonRoute = require('./routes/common')
 
 //middleware
 app.use(express.json())
 app.use(cors())
 
 // routes
-app.use('/api/common', commonRoutes)
+app.use('/api/test', testRoute)
+app.use('/api/common', commonRoute)
 
 // connection with database
 connection()
