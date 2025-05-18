@@ -1,18 +1,27 @@
 const router = require('express').Router()
-const { User, validate } = require('../models/User')
+const { User } = require('../models/User')
 const bcrypt = require('bcrypt')
-const mongoose = require('mongoose')
+const joi = require('joi')
+const complexity = require('joi-password-complexity')
 
 // create new account
 router.post('/register', async (req, res) => {
   try {
-    // test if there are any errors
-    const { error } = validate(req.body)
+    // validate body
+    const { error } = joi.object({
+      username: joi.string().required().label("Username"),
+      firstName: joi.string().required().label("First Name"),
+      lastName: joi.string().required().label("Last Name"),
+      email: joi.string().email().required().label("Email"),
+      password: complexity().required().label("Password"),
+      role: joi.string().valid('USER', 'ADMIN').label("Role")
+    }).validate(req.body)
+
     if (error)
       return res.status(400).send({ message: error.details[0].message })
 
     // get user with passed email or username
-    const existingUser = await User.findOne({
+    const user = await User.findOne({
       $or: [
         { email: req.body.email },
         { username: req.body.username }
@@ -20,11 +29,11 @@ router.post('/register', async (req, res) => {
     });
 
     // check if user exists and return message
-    if (existingUser) {
-      if (existingUser.email === req.body.email) {
+    if (user) {
+      if (user.email === req.body.email) {
         return res.status(400).json({ message: "User with this email already exists." });
       }
-      if (existingUser.username === req.body.username) {
+      if (user.username === req.body.username) {
         return res.status(400).json({ message: "Username is taken." });
       }
     }
@@ -35,8 +44,10 @@ router.post('/register', async (req, res) => {
     await new User({ ...req.body, password: hashPassword }).save()
 
     res.status(201).send({ message: "User created successfully" })
+    console.log("User created successfully")
   }
   catch (error) {
+    console.error("Error while creating new account")
     res.status(500).send({ message: "Internal Server Error" })
   }
 })
