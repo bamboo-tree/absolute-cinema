@@ -1,8 +1,20 @@
 const router = require('express').Router()
-const { User } = require('../models/User')
+const User = require('../models/User')
 const bcrypt = require('bcrypt')
 const joi = require('joi')
 const complexity = require('joi-password-complexity')
+
+
+/*
+
+  APIs:
+
+  register
+  get_movie -
+  get_reviews -
+
+*/
+
 
 // create new account
 router.post('/register', async (req, res) => {
@@ -51,5 +63,12 @@ router.post('/register', async (req, res) => {
     res.status(500).send({ message: "Internal Server Error" })
   }
 })
+
+
+// get movie
+
+
+// get reviews
+
 
 module.exports = router

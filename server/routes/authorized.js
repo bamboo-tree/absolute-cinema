@@ -3,8 +3,25 @@ const bcrypt = require('bcrypt');
 const joi = require('joi')
 const complexity = require('joi-password-complexity')
 
-const { User } = require('../models/User')
+const User = require('../models/User')
 const authenticateToken = require('../middleware/authorized')
+
+
+/*
+
+  APIs:
+
+  authenticate
+  get_account
+  edit_account
+  delete_account
+  add_review - 
+  edit_review -
+  delete_review -
+  add_favourite -
+  delete_favourite -
+
+*/
 
 
 // authenticate
@@ -47,14 +64,6 @@ router.post('/authenticate', async (req, res) => {
 // get account data
 router.post('/get_account', authenticateToken, async (req, res) => {
   try {
-    // validate body
-    const { error } = joi.object({
-      username: joi.string().required().label("Username")
-    }).validate(req.body);
-
-    if (error)
-      return res.status(400).send({ message: error.details[0].message })
-
     // get user by username and skip password
     const user = await User.findById(req.user._id).select('-password');
     if (!user)
@@ -148,6 +157,25 @@ router.post('/edit_account', authenticateToken, async (req, res) => {
 })
 
 // delete account
+router.post('/delete_account', authenticateToken, async (req, res) => {
+  try {
+    // get user by username and skip password
+    const user = await User.findById(req.user._id);
+    if (!user)
+      return res.status(404).json({ message: "User not found." });
+
+    // delete user
+    await user.deleteOne()
+
+    // send info
+    res.status(200).send({ message: "User deleted successfully" });
+    console.log("User deleted successfully")
+  }
+  catch (error) {
+    console.error("Error while deleting user")
+    res.status(500).send({ message: "Internal Server Error" });
+  }
+})
 
 
 // add review
