@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const { User, validate } = require('../models/User')
 const bcrypt = require('bcrypt')
+const mongoose = require('mongoose')
 
 // create new account
 router.post('/register', async (req, res) => {
@@ -32,39 +33,12 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(Number(process.env.SALT))
     const hashPassword = await bcrypt.hash(req.body.password, salt)
     await new User({ ...req.body, password: hashPassword }).save()
+
     res.status(201).send({ message: "User created successfully" })
   }
   catch (error) {
     res.status(500).send({ message: "Internal Server Error" })
   }
 })
-
-// read account data
-router.post('/read', async (req, res) => {
-  try {
-    // check if username was passed
-    if (!req.body.username) {
-      return res.status(400).json({ message: "Username is required." });
-    }
-
-    // get user by username and skip password
-    const user = await User.findOne({ username: req.body.username }).select('-password');
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    res.status(200).json(user);
-  }
-  catch (error) {
-    res.status(500).send({ message: "Internal Server Error" });
-  }
-})
-
-
-// update account data
-
-
-// delete account
-
 
 module.exports = router
