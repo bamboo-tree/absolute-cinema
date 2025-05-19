@@ -1,44 +1,31 @@
 const router = require('express').Router()
-const bcrypt = require('bcrypt');
 const joi = require('joi')
-const complexity = require('joi-password-complexity')
 const upload = require('../config/multer')
 const fs = require('fs')
 const path = require('path')
+const mongoose = require('mongoose')
 
 const User = require('../models/User')
 const Movie = require('../models/Movie')
-const authenticateToken = require('../middleware/authorized')
+const { authorizeAdmin } = require('../middleware/authorized')
 
 
 /*
 
   APIs:
 
-  add_movie -
-  edit_movie -
-  delete_movie -
-  delete_user -
-  delete_review -H
-
-  TODO:
-  - check if it is admin
+  add_movie - ok
+  update_movie - ok
+  delete_movie - ok
+  delete_user - null
+  delete_review - null
 
 */
 
 
 // add movie
-router.post('/add_movie', authenticateToken, upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "gallery", maxCount: 5 }]), async (req, res) => {
+router.post('/add_movie', authorizeAdmin, upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "gallery", maxCount: 10 }]), async (req, res) => {
   try {
-    // convert string to array for directors and cast
-    const processNames = (input) => {
-      if (Array.isArray(input)) return input;
-      if (typeof input === 'string') {
-        return input.split(',').map(name => name.trim());
-      }
-      return [];
-    };
-
     const { title, description, directors, cast, releaseDate } = req.body
 
     // validate input
@@ -99,12 +86,95 @@ router.post('/add_movie', authenticateToken, upload.fields([{ name: "thumbnail",
 })
 
 
-// edit movie
+// update movie
+router.put('/update_movie/:id', authorizeAdmin, upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'gallery', maxCount: 10 }]), async (req, res) => {
+  try {
+    const { id } = req.params;
 
+    // validate ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid movie ID format" });
+    }
+
+    // find movie to update
+    const movie = await Movie.findById(id);
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    const updateData = { ...req.body };
+
+    // directors
+    if (req.body.directors) {
+      updateData.directors = processNames(req.body.directors);
+    }
+    // cast
+    if (req.body.cast) {
+      updateData.cast = processNames(req.body.cast);
+    }
+
+    // thumbnail
+    if (req.files?.thumbnail) {
+      // delete old file
+      if (movie.thumbnail) {
+        const oldPath = path.join(__dirname, '../public', movie.thumbnail);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+      updateData.thumbnail = `/uploads/movies/${req.files.thumbnail[0].filename}`;
+    }
+
+    // gallery
+    if (req.files?.gallery) {
+      const newGallery = req.files.gallery.map(file =>
+        `/uploads/movies/${file.filename}`
+      );
+      updateData.gallery = [...movie.gallery, ...newGallery];
+    }
+
+    // remove old images from gallery
+    if (req.body.removeGallery) {
+      const idsToRemove = JSON.parse(req.body.removeGallery);
+      idsToRemove.forEach(id => {
+        const imgPath = movie.gallery[id];
+        if (imgPath) {
+          const fullPath = path.join(__dirname, '../public', imgPath);
+          if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+        }
+      });
+      updateData.gallery = movie.gallery.filter((_, index) =>
+        !idsToRemove.includes(index.toString())
+      );
+    }
+
+    // update movie data
+    const updatedMovie = await Movie.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-__v');
+
+    res.status(200).json({ message: "Movie updated successfully" });
+    console.log("Movie updated successfully")
+  }
+  catch (error) {
+    console.error("Error while updating movie:", error);
+
+    // delete files
+    if (req.files) {
+      Object.values(req.files).forEach(files => {
+        files.forEach(file => {
+          if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+        });
+      });
+    }
+
+    res.status(500).json({ message: "Failed to update movie" });
+  }
+})
 
 
 // delete movie
-router.delete('/delete_movie', authenticateToken, async (req, res) => {
+router.delete('/delete_movie', authorizeAdmin, async (req, res) => {
   try {
     // validate body
     const { error } = joi.object({
@@ -156,6 +226,21 @@ router.delete('/delete_movie', authenticateToken, async (req, res) => {
 // delete review
 
 
+
+
+
+
+// other methods
+
+
+// convert string into array
+function processNames(input) {
+  if (Array.isArray(input)) return input;
+  if (typeof input === 'string') {
+    return input.split(',').map(name => name.trim());
+  }
+  return [];
+}
 
 
 module.exports = router
