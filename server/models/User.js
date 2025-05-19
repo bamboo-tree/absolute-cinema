@@ -11,13 +11,13 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' }
 })
 
-// generate JWT token to access sites and functionalities for users only
+// generate JWT token to access sites and functionalities for logged clients only
 userSchema.methods.generateAuthToken = function () {
-  if (!process.env.JWTPRIVATEKEY)
-    throw new Error("JWTPRIVATEKEY is not defined");
-
   return jwt.sign(
-    { _id: this._id },
+    {
+      _id: this._id,
+      role: this.role
+    },
     process.env.JWTPRIVATEKEY,
     { expiresIn: "7d" }
   );

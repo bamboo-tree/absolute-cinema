@@ -226,13 +226,6 @@ router.delete('/delete_movie', authorizeAdmin, async (req, res) => {
 // delete review
 
 
-
-
-
-
-// other methods
-
-
 // convert string into array
 function processNames(input) {
   if (Array.isArray(input)) return input;

@@ -4,7 +4,7 @@ const joi = require('joi')
 const complexity = require('joi-password-complexity')
 
 const User = require('../models/User')
-const authenticateToken = require('../middleware/authorized')
+const { authenticateToken, authorizeAdmin, authorizeUser } = require('../middleware/authorized')
 
 
 /*
@@ -13,13 +13,13 @@ const authenticateToken = require('../middleware/authorized')
 
   authenticate - ok
   get_account - ok
-  edit_account - fix
-  delete_account - change to delete
+  update_account - ok
+  delete_account - ok
   add_review - 
-  edit_review -
-  delete_review -
-  add_favourite -
-  delete_favourite -
+  edit_review - 
+  delete_review - 
+  add_favourite - 
+  delete_favourite - 
 
 */
 
@@ -64,7 +64,7 @@ router.post('/authenticate', async (req, res) => {
 // get account data
 router.post('/get_account', authenticateToken, async (req, res) => {
   try {
-    // get user by username and skip password
+    // get user by id and skip password
     const user = await User.findById(req.user._id).select('-password');
     if (!user)
       return res.status(404).json({ message: "User not found." });
@@ -79,16 +79,16 @@ router.post('/get_account', authenticateToken, async (req, res) => {
   }
 })
 
-// fix it
+
 // update account data
-router.post('/edit_account', authenticateToken, async (req, res) => {
+router.put('/update_account', authenticateToken, async (req, res) => {
   try {
     // validate body
     const { error } = joi.object({
-      username: joi.string().required.label("Username"),
+      username: joi.string().label("Username"),
       firstName: joi.string().label("First Name"),
       lastName: joi.string().label("Last Name"),
-      email: joi.email().label("Email"),
+      email: joi.string().email().label("Email"),
       password: complexity().label("Password")
     }).validate(req.body);
 
@@ -97,57 +97,78 @@ router.post('/edit_account', authenticateToken, async (req, res) => {
 
     // get current user data
     const user = await User.findById(req.user._id);
-    if (!user) {
+    if (!user)
       return res.status(404).json({ message: "User not found." });
-    }
 
-    // check if username is being changed and if it's already taken
+    // update object
+    const updates = {};
+    const errors = [];
+
+    // check and update username
     if (req.body.username && req.body.username !== user.username) {
       const usernameExists = await User.findOne({
         username: req.body.username,
-        _id: { $ne: req.user._id }
+        _id: { $ne: user._id }
       });
 
       if (usernameExists) {
-        return res.status(400).json({ message: "Username is already taken." });
+        errors.push("Username is already taken");
+      } else {
+        updates.username = req.body.username;
       }
-      user.username = req.body.username;
     }
 
-    // check if email is being changed and if it's already taken
+    // check and update email
     if (req.body.email && req.body.email !== user.email) {
       const emailExists = await User.findOne({
         email: req.body.email,
-        _id: { $ne: req.user._id } // exclude current user
+        _id: { $ne: user._id }
       });
 
       if (emailExists) {
-        return res.status(400).json({ message: "Email is already in use." });
+        errors.push("Email is already in use");
+      } else {
+        updates.email = req.body.email;
       }
-      user.email = req.body.email;
     }
 
-    // update other fields
-    if (req.body.firstName)
-      user.firstName = req.body.firstName;
+    // if any conflicts, return errors
+    if (errors.length > 0) {
+      return res.status(400).json({
+        message: "Update failed",
+        errors
+      });
+    }
 
-    if (req.body.lastName)
-      user.lastName = req.body.lastName;
+    /// update other fields if provided
+    if (req.body.firstName) updates.firstName = req.body.firstName;
+    if (req.body.lastName) updates.lastName = req.body.lastName;
 
+    // update password if provided
     if (req.body.password) {
       const salt = await bcrypt.genSalt(Number(process.env.SALT));
-      user.password = await bcrypt.hash(req.body.password, salt);
+      updates.password = await bcrypt.hash(req.body.password, salt);
     }
 
-    // save updated user
-    await user.save();
+    // apply updates
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      updates,
+      { new: true, runValidators: true }
+    ).select('-password');
 
-    // send user data
-    const updatedUser = await User.findById(req.user._id).select('-password');
+    // generate new token if username or email changed
+    let newToken;
+    if (updates.username || updates.email) {
+      newToken = updatedUser.generateAuthToken();
+    }
+
     res.status(200).json({
-      message: "Account updated successfully",
-      user: updatedUser
+      message: "User account updated successfully",
+      user: updatedUser,
+      token: newToken || undefined
     });
+
     console.log("User account update successful")
   }
   catch (error) {
@@ -156,8 +177,9 @@ router.post('/edit_account', authenticateToken, async (req, res) => {
   }
 })
 
+
 // delete account
-router.post('/delete_account', authenticateToken, async (req, res) => {
+router.delete('/delete_account', authenticateToken, async (req, res) => {
   try {
     // get user by username and skip password
     const user = await User.findById(req.user._id);
