@@ -1,16 +1,15 @@
 const mongoose = require('mongoose')
 
-
 const movieSchema = new mongoose.Schema({
-  title: { type: String, required: true },
+  title: { type: String, required: true, unique: true },
   description: { type: String, required: true },
   directors: { type: [String], required: true },
   cast: { type: [String], required: true },
-  date: { type: Date, required: false },
+  releaseDate: { type: Date, required: true },
   thumbnail: { type: String, required: true },
-  images: { type: [String], required: false }, // list of paths to images stored on server side
+  gallery: { type: [String], default: [] },
+  createdAt: { type: Date, default: Date.now }
 })
-
 
 const Movie = mongoose.model("Movie", movieSchema)
 module.exports = Movie
