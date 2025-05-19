@@ -11,10 +11,10 @@ const authenticateToken = require('../middleware/authorized')
 
   APIs:
 
-  authenticate
-  get_account
-  edit_account
-  delete_account
+  authenticate - ok
+  get_account - ok
+  edit_account - fix
+  delete_account - change to delete
   add_review - 
   edit_review -
   delete_review -
@@ -79,7 +79,7 @@ router.post('/get_account', authenticateToken, async (req, res) => {
   }
 })
 
-
+// fix it
 // update account data
 router.post('/edit_account', authenticateToken, async (req, res) => {
   try {

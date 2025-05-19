@@ -21,6 +21,9 @@ const authenticateToken = require('../middleware/authorized')
   delete_user -
   delete_review -H
 
+  TODO:
+  - check if it is admin
+
 */
 
 
@@ -78,9 +81,7 @@ router.post('/add_movie', authenticateToken, upload.fields([{ name: "thumbnail",
     console.log("Movie added successfully")
   }
   catch (error) {
-
     console.error("Error while adding new movie")
-    res.status(500).json({ message: "Internal server error" })
 
     // cleanup files on error
     if (req.files) {
@@ -92,6 +93,8 @@ router.post('/add_movie', authenticateToken, upload.fields([{ name: "thumbnail",
         })
       })
     }
+
+    res.status(500).json({ message: "Internal server error" })
   }
 })
 
@@ -99,7 +102,52 @@ router.post('/add_movie', authenticateToken, upload.fields([{ name: "thumbnail",
 // edit movie
 
 
+
 // delete movie
+router.delete('/delete_movie', authenticateToken, async (req, res) => {
+  try {
+    // validate body
+    const { error } = joi.object({
+      title: joi.string().required().label("Title")
+    }).validate(req.body);
+
+    if (error)
+      return res.status(400).send({ message: error.details[0].message });
+
+    // find movie
+    const movie = await Movie.findOneAndDelete(req.body.title);
+    if (!movie)
+      return res.status(404).json({ message: "Movie not found" });
+
+    // delete files related with movie
+    const deleteFile = (filePath) => {
+      if (!filePath) return;
+
+      const fullPath = path.join(__dirname, '../public', filePath);
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+      }
+    };
+
+    deleteFile(movie.thumbnail);
+    movie.gallery.forEach(deleteFile);
+
+    // send message
+    res.status(200).json({ message: "Movie deleted successfully" });
+    console.log("Movie deleted successfully")
+
+  }
+  catch (error) {
+    console.error("Error deleting movie:", error);
+
+    // if error occured while deleting a movie but before removing files, idk...
+    if (movie) {
+      await Movie.create(movie).catch(() => { });
+    }
+
+    res.status(500).json({ message: "Failed to delete movie" });
+  }
+});
 
 
 // delete user
