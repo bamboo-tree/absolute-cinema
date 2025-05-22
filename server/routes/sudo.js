@@ -223,7 +223,7 @@ router.delete('/delete_movie', authorizeAdmin, async (req, res) => {
 router.get('/get_all_users', authorizeAdmin, async (req, res) => {
   try {
     // find all users
-    const users = await User.find({}).select('-__v -password -createdAt -updatedAt');
+    const users = await User.find({}).select('-__v -password');
     if (!users)
       return res.status(404).json({ message: "No users found" });
 

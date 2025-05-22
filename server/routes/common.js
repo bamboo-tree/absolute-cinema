@@ -1,15 +1,17 @@
 const router = require('express').Router()
-const User = require('../models/User')
 const bcrypt = require('bcrypt')
 const joi = require('joi')
 const complexity = require('joi-password-complexity')
 
+const User = require('../models/User')
+const Movie = require('../models/Movie')
 
 /*
 
   APIs:
 
   register - ok
+  get_all_movies -
   get_movie -
   get_reviews -
 
@@ -68,7 +70,24 @@ router.post('/register', async (req, res) => {
 })
 
 
-// get movie
+// get all movies
+router.get('/get_all_movies', async (req, res) => {
+  try {
+    // find all movies
+    const movies = await Movie.find({}).select('-__v -createdAt');
+    if (!movies)
+      return res.status(404).json({ message: "No movies found" });
+
+    // send movies
+    res.status(200).json(movies);
+    console.log("Movies fetched successfully")
+
+  }
+  catch (error) {
+    console.error("Error fetching movies:", error)
+    res.status(500).json({ message: "Failed to fetch movies" })
+  }
+})
 
 
 // get reviews

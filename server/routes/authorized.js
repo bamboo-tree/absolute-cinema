@@ -62,10 +62,10 @@ router.post('/authenticate', async (req, res) => {
 
 
 // get account data
-router.post('/get_account', authenticateToken, async (req, res) => {
+router.get('/get_account', authenticateToken, async (req, res) => {
   try {
     // get user by id and skip password
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await User.findById(req.user._id).select('-password -__v');
     if (!user)
       return res.status(404).json({ message: "User not found." });
 
