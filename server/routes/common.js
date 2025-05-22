@@ -11,10 +11,8 @@ const Movie = require('../models/Movie')
   APIs:
 
   register - ok
-  get_all_movies -
-  get_movie -
-  get_reviews -
-
+  get_all_movies - ok
+  get_movie - ok
 
 */
 
@@ -74,7 +72,7 @@ router.post('/register', async (req, res) => {
 router.get('/get_all_movies', async (req, res) => {
   try {
     // find all movies
-    const movies = await Movie.find({}).select('-__v -createdAt');
+    const movies = await Movie.find({}).select('-__v -createdAt -reviews');
     if (!movies)
       return res.status(404).json({ message: "No movies found" });
 
@@ -89,8 +87,26 @@ router.get('/get_all_movies', async (req, res) => {
   }
 })
 
+// get movie by title
+router.get('/get_movie/:title', async (req, res) => {
+  try {
+    // find movie by title
+    const movie = await Movie.findOne({ title: req.params.title }).select('-__v -createdAt');
+    if (!movie)
+      return res.status(404).json({ message: "Movie not found" });
 
-// get reviews
+    // send movie
+    res.status(200).json(movie);
+    console.log("Movie fetched successfully")
+
+  }
+  catch (error) {
+    console.error("Error fetching movie:", error)
+    res.status(500).json({ message: "Failed to fetch movie" })
+  }
+});
+
+
 
 
 module.exports = router

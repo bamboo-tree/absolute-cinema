@@ -5,7 +5,7 @@ const complexity = require('joi-password-complexity')
 
 const User = require('../models/User')
 const Movie = require('../models/Movie')
-const { authenticateToken, authorizeAdmin, authorizeUser, authorizeBoth } = require('../middleware/authorized')
+const { authenticateToken, authorizeUser, authorizeBoth } = require('../middleware/authorized')
 
 
 /*
@@ -16,9 +16,9 @@ const { authenticateToken, authorizeAdmin, authorizeUser, authorizeBoth } = requ
   get_account - ok
   update_account - ok
   delete_account - ok
-  add_review - 
-  edit_review - 
-  delete_review - 
+  add_review - ok
+  update_review - ok
+  delete_review - ok
   add_favourite - 
   delete_favourite - 
 
@@ -200,7 +200,7 @@ router.delete('/delete_account', authenticateToken, authorizeBoth, async (req, r
   }
 })
 
-
+// add review
 router.post('/add_review', authenticateToken, authorizeUser, async (req, res) => {
   try {
     // validate body
@@ -213,11 +213,6 @@ router.post('/add_review', authenticateToken, authorizeUser, async (req, res) =>
     if (error) {
       console.error("Validation error:", error.details);
       return res.status(400).json({ message: error.details[0].message });
-    }
-
-    // is user authenticated
-    if (!req.user?._id || !req.user?.username) {
-      return res.status(401).json({ message: "User not authenticated." });
     }
 
     // find movie by title
@@ -262,9 +257,104 @@ router.post('/add_review', authenticateToken, authorizeUser, async (req, res) =>
 
 
 // delete review
+router.delete('/delete_review', authenticateToken, authorizeUser, async (req, res) => {
+  try {
+    // validate body
+    const { error } = joi.object({
+      title: joi.string().required().label("Title")
+    }).validate(req.body);
+
+    if (error) {
+      console.error("Validation error:", error.details);
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // find movie by title
+    const movie = await Movie.findOne({ title: req.body.title });
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found." });
+    }
+
+    // find review by user id
+    const review = movie.reviews.find(review => review.user.equals(req.user._id));
+    if (review === -1) {
+      return res.status(404).json({ message: "Review not found." });
+    }
+
+    // remove review from movie and save
+    movie.reviews.splice(review, 1);
+    await movie.save();
+
+    res.status(200).json({ message: "Review deleted successfully" });
+    console.log(`Review deleted from movie: ${movie.title}`);
+
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    res.status(500).json({
+      message: "Failed to delete review",
+      error: error.message
+    });
+  }
+});
 
 
-// edit review
+// update review
+router.put('/update_review', authenticateToken, authorizeUser, async (req, res) => {
+  try {
+    // validate body
+    const { error } = joi.object({
+      title: joi.string().required().label("Title"),
+      rating: joi.number().min(1).max(10).label("Rating"),
+      comment: joi.string().label("Comment")
+    }).validate(req.body);
+
+    if (error) {
+      console.error("Validation error:", error.details);
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // check if title is provided
+    if (!req.body.title) {
+      return res.status(400).json({ message: "Title is required." });
+    }
+
+    // find movie by title
+    const movie = await Movie.findOne({ title: req.body.title });
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found." });
+    }
+
+    // find review by user id
+    const review = movie.reviews.find(review => review.user.equals(req.user._id));
+    if (!review) {
+      return res.status(404).json({ message: "Review not found." });
+    }
+
+    // update review fields if provided
+    if (req.body.rating) {
+      review.rating = req.body.rating;
+    }
+    if (req.body.comment) {
+      review.comment = req.body.comment;
+    }
+    if (!req.body.rating && !req.body.comment) {
+      return res.status(400).json({ message: "No fields to update." });
+    }
+    // save updated movie
+    await movie.save();
+
+    res.status(200).json({
+      message: "Review updated successfully",
+      review
+    });
+  } catch (error) {
+    console.error("Error updating review:", error);
+    res.status(500).json({
+      message: "Failed to update review",
+      error: error.message
+    });
+  }
+});
 
 
 // add to favourite
