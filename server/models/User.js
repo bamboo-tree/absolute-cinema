@@ -16,7 +16,8 @@ userSchema.methods.generateAuthToken = function () {
   return jwt.sign(
     {
       _id: this._id,
-      role: this.role
+      role: this.role,
+      username: this.username
     },
     process.env.JWTPRIVATEKEY,
     { expiresIn: "7d" }

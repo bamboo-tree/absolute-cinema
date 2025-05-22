@@ -7,7 +7,7 @@ const mongoose = require('mongoose')
 
 const User = require('../models/User')
 const Movie = require('../models/Movie')
-const { authorizeAdmin } = require('../middleware/authorized')
+const { authenticateToken, authorizeAdmin } = require('../middleware/authorized')
 
 
 /*
@@ -24,7 +24,7 @@ const { authorizeAdmin } = require('../middleware/authorized')
 
 
 // add movie
-router.post('/add_movie', authorizeAdmin, upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "gallery", maxCount: 10 }]), async (req, res) => {
+router.post('/add_movie', authenticateToken, authorizeAdmin, upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "gallery", maxCount: 10 }]), async (req, res) => {
   try {
     const { title, description, directors, cast, releaseDate } = req.body
 
@@ -87,7 +87,7 @@ router.post('/add_movie', authorizeAdmin, upload.fields([{ name: "thumbnail", ma
 
 
 // update movie
-router.put('/update_movie/:id', authorizeAdmin, upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'gallery', maxCount: 10 }]), async (req, res) => {
+router.put('/update_movie/:id', authenticateToken, authorizeAdmin, upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'gallery', maxCount: 10 }]), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -173,7 +173,7 @@ router.put('/update_movie/:id', authorizeAdmin, upload.fields([{ name: 'thumbnai
 })
 
 // delete movie
-router.delete('/delete_movie', authorizeAdmin, async (req, res) => {
+router.delete('/delete_movie', authenticateToken, authorizeAdmin, async (req, res) => {
   try {
     // validate body
     const { error } = joi.object({
@@ -220,7 +220,7 @@ router.delete('/delete_movie', authorizeAdmin, async (req, res) => {
 
 
 // get all users
-router.get('/get_all_users', authorizeAdmin, async (req, res) => {
+router.get('/get_all_users', authenticateToken, authorizeAdmin, async (req, res) => {
   try {
     // find all users
     const users = await User.find({}).select('-__v -password');
@@ -239,7 +239,7 @@ router.get('/get_all_users', authorizeAdmin, async (req, res) => {
 })
 
 // delete user
-router.delete('/delete_user', authorizeAdmin, async (req, res) => {
+router.delete('/delete_user', authenticateToken, authorizeAdmin, async (req, res) => {
   try {
     // validate body
     const { error } = joi.object({

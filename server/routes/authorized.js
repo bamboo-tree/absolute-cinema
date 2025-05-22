@@ -4,7 +4,8 @@ const joi = require('joi')
 const complexity = require('joi-password-complexity')
 
 const User = require('../models/User')
-const { authenticateToken, authorizeAdmin, authorizeUser } = require('../middleware/authorized')
+const Movie = require('../models/Movie')
+const { authenticateToken, authorizeAdmin, authorizeUser, authorizeBoth } = require('../middleware/authorized')
 
 
 /*
@@ -62,7 +63,7 @@ router.post('/authenticate', async (req, res) => {
 
 
 // get account data
-router.get('/get_account', authenticateToken, async (req, res) => {
+router.get('/get_account', authenticateToken, authorizeBoth, async (req, res) => {
   try {
     // get user by id and skip password
     const user = await User.findById(req.user._id).select('-password -__v');
@@ -81,7 +82,7 @@ router.get('/get_account', authenticateToken, async (req, res) => {
 
 
 // update account data
-router.put('/update_account', authenticateToken, async (req, res) => {
+router.put('/update_account', authenticateToken, authorizeBoth, async (req, res) => {
   try {
     // validate body
     const { error } = joi.object({
@@ -179,7 +180,7 @@ router.put('/update_account', authenticateToken, async (req, res) => {
 
 
 // delete account
-router.delete('/delete_account', authenticateToken, async (req, res) => {
+router.delete('/delete_account', authenticateToken, authorizeBoth, async (req, res) => {
   try {
     // get user by username and skip password
     const user = await User.findById(req.user._id);
@@ -200,7 +201,64 @@ router.delete('/delete_account', authenticateToken, async (req, res) => {
 })
 
 
-// add review
+router.post('/add_review', authenticateToken, authorizeUser, async (req, res) => {
+  try {
+    // validate body
+    const { error } = joi.object({
+      title: joi.string().required().label("Title"),
+      rating: joi.number().min(1).max(10).required().label("Rating"),
+      comment: joi.string().required().label("Comment")
+    }).validate(req.body);
+
+    if (error) {
+      console.error("Validation error:", error.details);
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // is user authenticated
+    if (!req.user?._id || !req.user?.username) {
+      return res.status(401).json({ message: "User not authenticated." });
+    }
+
+    // find movie by title
+    const movie = await Movie.findOne({ title: req.body.title });
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found." });
+    }
+
+    // have user already reviewed this movie?
+    const existingReview = movie.reviews.find(review => review.user.equals(req.user._id));
+    if (existingReview) {
+      return res.status(409).json({ message: "You have already reviewed this movie." });
+    }
+
+    // create new review object
+    const newReview = {
+      user: req.user._id,
+      username: req.user.username,
+      rating: req.body.rating,
+      comment: req.body.comment,
+      createdAt: new Date()
+    };
+
+    // add review to movie and save
+    movie.reviews.push(newReview);
+    await movie.save();
+
+    res.status(201).json({
+      message: "Review added successfully",
+      review: newReview
+    });
+    console.log(`Review added to movie: ${movie.title}`);
+
+  } catch (error) {
+    console.error("Error adding review:", error);
+    res.status(500).json({
+      message: "Failed to add review",
+      error: error.message
+    });
+  }
+});
 
 
 // delete review
