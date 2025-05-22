@@ -9,9 +9,10 @@ const complexity = require('joi-password-complexity')
 
   APIs:
 
-  register
+  register - ok
   get_movie -
   get_reviews -
+
 
 */
 
@@ -53,9 +54,11 @@ router.post('/register', async (req, res) => {
     // hash the password and create new user
     const salt = await bcrypt.genSalt(Number(process.env.SALT))
     const hashPassword = await bcrypt.hash(req.body.password, salt)
-    await new User({ ...req.body, password: hashPassword }).save()
+    const newUser = await User({ ...req.body, password: hashPassword }).save()
 
-    res.status(201).send({ message: "User created successfully" })
+    // create new token for user
+    const token = newUser.generateAuthToken();
+    res.status(200).send({ token: token, message: "User created successfully" })
     console.log("User created successfully")
   }
   catch (error) {

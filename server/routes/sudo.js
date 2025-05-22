@@ -17,7 +17,7 @@ const { authorizeAdmin } = require('../middleware/authorized')
   add_movie - ok
   update_movie - ok
   delete_movie - ok
-  delete_user - null
+  delete_user - ok
   delete_review - null
 
 */
@@ -172,7 +172,6 @@ router.put('/update_movie/:id', authorizeAdmin, upload.fields([{ name: 'thumbnai
   }
 })
 
-
 // delete movie
 router.delete('/delete_movie', authorizeAdmin, async (req, res) => {
   try {
@@ -185,7 +184,7 @@ router.delete('/delete_movie', authorizeAdmin, async (req, res) => {
       return res.status(400).send({ message: error.details[0].message });
 
     // find movie
-    const movie = await Movie.findOneAndDelete(req.body.title);
+    const movie = await Movie.findOneAndDelete({ title: req.body.title });
     if (!movie)
       return res.status(404).json({ message: "Movie not found" });
 
@@ -220,7 +219,51 @@ router.delete('/delete_movie', authorizeAdmin, async (req, res) => {
 });
 
 
+// get all users
+router.get('/get_all_users', authorizeAdmin, async (req, res) => {
+  try {
+    // find all users
+    const users = await User.find({}).select('-__v -password -createdAt -updatedAt');
+    if (!users)
+      return res.status(404).json({ message: "No users found" });
+
+    // send users
+    res.status(200).json(users);
+    console.log("Users fetched successfully")
+
+  }
+  catch (error) {
+    console.error("Error fetching users:", error)
+    res.status(500).json({ message: "Failed to fetch users" })
+  }
+})
+
 // delete user
+router.delete('/delete_user', authorizeAdmin, async (req, res) => {
+  try {
+    // validate body
+    const { error } = joi.object({
+      username: joi.string().required().label("Username")
+    }).validate(req.body);
+
+    if (error)
+      return res.status(400).send({ message: error.details[0].message });
+
+    // find user
+    const user = await User.findOneAndDelete({ username: req.body.username });
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    // send message
+    res.status(200).json({ message: "User deleted successfully" });
+    console.log("User deleted successfully")
+
+  }
+  catch (error) {
+    console.error("Error deleting user:", error)
+    res.status(500).json({ message: "Failed to delete user" })
+  }
+})
 
 
 // delete review
