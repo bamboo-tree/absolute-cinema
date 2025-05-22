@@ -107,6 +107,4 @@ router.get('/get_movie/:title', async (req, res) => {
 });
 
 
-
-
 module.exports = router

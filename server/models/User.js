@@ -24,5 +24,8 @@ userSchema.methods.generateAuthToken = function () {
   );
 };
 
+// index username faster search
+userSchema.index({ username: 1 });
+
 const User = mongoose.model("User", userSchema)
 module.exports = User

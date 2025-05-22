@@ -19,14 +19,12 @@ const { authenticateToken, authorizeUser, authorizeBoth } = require('../middlewa
   add_review - ok
   update_review - ok
   delete_review - ok
-  add_favourite - 
-  delete_favourite - 
 
 */
 
 
-// authenticate
-router.post('/authenticate', async (req, res) => {
+// login
+router.post('/login', async (req, res) => {
   try {
     // validate body
     const { error } = joi.object({
@@ -35,12 +33,12 @@ router.post('/authenticate', async (req, res) => {
     }).validate(req.body);
 
     if (error)
-      return res.status(400).send({ message: error.details[0].message })
+      return res.status(400).json({ message: error.details[0].message })
 
     // find user by username
     const existingUser = await User.findOne({ username: req.body.username });
     if (!existingUser)
-      return res.status(401).send({ message: "Invalid Email or Password" })
+      return res.status(401).json({ message: "Invalid Email or Password" })
 
     // check password
     const validPassword = await bcrypt.compare(
@@ -48,16 +46,14 @@ router.post('/authenticate', async (req, res) => {
       existingUser.password
     )
     if (!validPassword)
-      return res.status(401).send({ message: "Invalid Email or Password" })
+      return res.status(401).json({ message: "Invalid Email or Password" })
 
     // create new token for user
     const token = existingUser.generateAuthToken();
-    res.status(200).send({ data: token, message: "Logged in successfully" })
-    console.log("Authentication successful")
+    res.status(200).json({ data: token, message: "Logged in successfully" })
   }
   catch (error) {
-    console.error("Error while authenticating user account")
-    res.status(500).send({ message: "Internal Server Error" })
+    res.status(500).json({ message: "Internal Server Error" })
   }
 })
 
@@ -72,11 +68,10 @@ router.get('/get_account', authenticateToken, authorizeBoth, async (req, res) =>
 
     // send user data
     res.status(200).json(user);
-    console.log("User account data recieved successfully")
   }
   catch (error) {
     console.error("Error while reading user data")
-    res.status(500).send({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 })
 
@@ -94,7 +89,7 @@ router.put('/update_account', authenticateToken, authorizeBoth, async (req, res)
     }).validate(req.body);
 
     if (error)
-      return res.status(400).send({ message: error.details[0].message })
+      return res.status(400).json({ message: error.details[0].message })
 
     // get current user data
     const user = await User.findById(req.user._id);
@@ -141,7 +136,7 @@ router.put('/update_account', authenticateToken, authorizeBoth, async (req, res)
       });
     }
 
-    /// update other fields if provided
+    // update other fields if provided
     if (req.body.firstName) updates.firstName = req.body.firstName;
     if (req.body.lastName) updates.lastName = req.body.lastName;
 
@@ -174,7 +169,7 @@ router.put('/update_account', authenticateToken, authorizeBoth, async (req, res)
   }
   catch (error) {
     console.error("Error while updating user account")
-    res.status(500).send({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 })
 
@@ -191,7 +186,7 @@ router.delete('/delete_account', authenticateToken, authorizeBoth, async (req, r
     await user.deleteOne()
 
     // send info
-    res.status(200).send({ message: "User deleted successfully" });
+    res.status(200).json({ message: "User deleted successfully" });
     console.log("User deleted successfully")
   }
   catch (error) {
@@ -313,11 +308,6 @@ router.put('/update_review', authenticateToken, authorizeUser, async (req, res) 
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    // check if title is provided
-    if (!req.body.title) {
-      return res.status(400).json({ message: "Title is required." });
-    }
-
     // find movie by title
     const movie = await Movie.findOne({ title: req.body.title });
     if (!movie) {
@@ -355,12 +345,6 @@ router.put('/update_review', authenticateToken, authorizeUser, async (req, res) 
     });
   }
 });
-
-
-// add to favourite
-
-
-// remove from favourite
 
 
 module.exports = router

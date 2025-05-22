@@ -18,7 +18,7 @@ const { authenticateToken, authorizeAdmin } = require('../middleware/authorized'
   update_movie - ok
   delete_movie - ok
   delete_user - ok
-  delete_review - null
+  delete_review - ok
 
 */
 
@@ -230,7 +230,6 @@ router.get('/get_all_users', authenticateToken, authorizeAdmin, async (req, res)
     // send users
     res.status(200).json(users);
     console.log("Users fetched successfully")
-
   }
   catch (error) {
     console.error("Error fetching users:", error)
@@ -257,7 +256,6 @@ router.delete('/delete_user', authenticateToken, authorizeAdmin, async (req, res
     // send message
     res.status(200).json({ message: "User deleted successfully" });
     console.log("User deleted successfully")
-
   }
   catch (error) {
     console.error("Error deleting user:", error)
@@ -267,6 +265,45 @@ router.delete('/delete_user', authenticateToken, authorizeAdmin, async (req, res
 
 
 // delete review
+router.delete('/delete_review', authenticateToken, authorizeAdmin, async (req, res) => {
+  try {
+    // validate body
+    const { error } = joi.object({
+      title: joi.string().required().label("Title"),
+      username: joi.string().required().label("Username")
+    }).validate(req.body);
+
+    if (error)
+      return res.status(400).send({ message: error.details[0].message });
+
+    // find movie
+    const movie = await Movie.findOne({ title: req.body.title });
+    if (!movie)
+      return res.status(404).json({ message: "Movie not found" });
+
+    // find user
+    const user = await User.findOne({ username: req.body.username });
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    // find review by user id
+    const reviewIndex = movie.reviews.findIndex(review => review.user.equals(user._id));
+    if (reviewIndex === -1)
+      return res.status(404).json({ message: "Review not found" });
+
+    // remove review from movie and save
+    movie.reviews.splice(reviewIndex, 1);
+    await movie.save();
+
+    // send message
+    res.status(200).json({ message: "Review deleted successfully" });
+    console.log("Review deleted successfully")
+  }
+  catch (error) {
+    console.error("Error deleting review:", error)
+    res.status(500).json({ message: "Failed to delete review" })
+  }
+})
 
 
 // convert string into array
