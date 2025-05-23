@@ -31,7 +31,7 @@ router.post('/register', async (req, res) => {
     }).validate(req.body)
 
     if (error)
-      return res.status(400).send({ message: error.details[0].message })
+      return res.status(400).json({ message: error.details[0].message })
 
     // get user with passed email or username
     const user = await User.findOne({
@@ -58,12 +58,12 @@ router.post('/register', async (req, res) => {
 
     // create new token for user
     const token = newUser.generateAuthToken();
-    res.status(200).send({ token: token, message: "User created successfully" })
+    res.status(200).json({ token: token, message: "User created successfully" })
     console.log("User created successfully")
   }
   catch (error) {
     console.error("Error while creating new account")
-    res.status(500).send({ message: "Internal Server Error" })
+    res.status(500).json({ message: "Internal Server Error" })
   }
 })
 

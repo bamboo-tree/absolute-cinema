@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
 
     // create new token for user
     const token = existingUser.generateAuthToken();
-    res.status(200).json({ data: token, message: "Logged in successfully" })
+    res.status(200).json({ token: token, message: "Logged in successfully" })
   }
   catch (error) {
     res.status(500).json({ message: "Internal Server Error" })
@@ -191,7 +191,7 @@ router.delete('/delete_account', authenticateToken, authorizeBoth, async (req, r
   }
   catch (error) {
     console.error("Error while deleting user")
-    res.status(500).send({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 })
 

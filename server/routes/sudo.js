@@ -42,7 +42,7 @@ router.post('/add_movie', authenticateToken, authorizeAdmin, upload.fields([{ na
           files.forEach(file => fs.unlinkSync(file.path))
         })
       }
-      return res.status(400).send({ message: "Movie already exists" })
+      return res.status(400).json({ message: "Movie already exists" })
     }
 
     // Prepare paths
@@ -181,7 +181,7 @@ router.delete('/delete_movie', authenticateToken, authorizeAdmin, async (req, re
     }).validate(req.body);
 
     if (error)
-      return res.status(400).send({ message: error.details[0].message });
+      return res.status(400).json({ message: error.details[0].message });
 
     // find movie
     const movie = await Movie.findOneAndDelete({ title: req.body.title });
@@ -246,7 +246,7 @@ router.delete('/delete_user', authenticateToken, authorizeAdmin, async (req, res
     }).validate(req.body);
 
     if (error)
-      return res.status(400).send({ message: error.details[0].message });
+      return res.status(400).json({ message: error.details[0].message });
 
     // find user
     const user = await User.findOneAndDelete({ username: req.body.username });
@@ -274,7 +274,7 @@ router.delete('/delete_review', authenticateToken, authorizeAdmin, async (req, r
     }).validate(req.body);
 
     if (error)
-      return res.status(400).send({ message: error.details[0].message });
+      return res.status(400).json({ message: error.details[0].message });
 
     // find movie
     const movie = await Movie.findOne({ title: req.body.title });
