@@ -66,9 +66,5 @@ const movieSchema = new mongoose.Schema({
 })
 
 
-// indexes for searching
-movieSchema.index({ title: 1 });
-
-
 const Movie = mongoose.model("Movie", movieSchema)
 module.exports = Movie
