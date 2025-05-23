@@ -40,6 +40,7 @@ const Login = ({ onLoginSuccess, onSwitchToRegister }) => {
       // save token to local storage
       localStorage.setItem('authToken', response.data.token);
       onLoginSuccess(response.data.token);
+      console.log("Login successful, token: ", response.data.token);
       console.log("Local storage token: ", localStorage.getItem('authToken'));
 
     } catch (error) {

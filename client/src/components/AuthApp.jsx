@@ -1,20 +1,21 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import Login from './Login';
 import Register from './Register';
 
 const AuthApp = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
 
   const handleLoginSuccess = (token) => {
     console.log('User logged in with token:', token);
-
-    // Tutaj możesz przekierować użytkownika lub zaktualizować stan aplikacji
-    // np. używając react-router: navigate('/dashboard');
+    localStorage.setItem('authToken', token);
+    navigate('/home');
   };
 
   const handleRegisterSuccess = (token) => {
-    console.log('User registered with token:', token);
-    // Automatyczne logowanie po rejestracji lub przekierowanie
+    console.log('User registered');
     handleLoginSuccess(token);
   };
 
