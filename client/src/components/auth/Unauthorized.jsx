@@ -1,10 +1,10 @@
-const Authorized = ({ children }) => {
+const Unauthorized = ({ children }) => {
   const token = localStorage.getItem("authToken");
 
-  if (!token) {
+  if (token) {
     return null;
   }
   return children;
 }
 
-export default Authorized;
+export default Unauthorized;
