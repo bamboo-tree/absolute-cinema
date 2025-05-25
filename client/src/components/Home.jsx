@@ -1,24 +1,24 @@
-import { AdminOnly } from "./auth/AdminOnly"
-import { UserOnly } from "./auth/UserOnly"
+import Navigation from "./Navigation"
+import Authorize from "../Authorize"
+
 
 const Home = () => {
 
   return (
     <div>
-      <h1>Dashboard</h1>
-      <AdminOnly>
+      <Navigation />
+      <Authorize requiredRoles={['ADMIN']}>
         <section className="admin-section">
           <h2>Panel administracyjny</h2>
           <p>Tutaj są funkcje dostępne tylko dla administratorów</p>
         </section>
-      </AdminOnly>
-
-      <UserOnly>
+      </Authorize>
+      <Authorize requiredRoles={['USER']}>
         <section className="user-section">
           <h2>Panel użytkownika</h2>
           <p>Tutaj są funkcje dostępne dla wszystkich użytkowników</p>
         </section>
-      </UserOnly>
+      </Authorize>
     </div>
   )
 }

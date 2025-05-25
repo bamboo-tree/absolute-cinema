@@ -1,0 +1,120 @@
+/* Navigation Styles */
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: var(--bg-200);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 10;
+}
+
+.logo h1 {
+  color: var(--primary-100);
+  margin: 0;
+  font-size: 1.8rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.logo h1:hover {
+  color: var(--primary-200);
+}
+
+.search-form {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.search-form input[type="button"],
+.search-form input[type="submit"],
+.search-form button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.home-button {
+  background-color: var(--bg-300);
+  color: var(--text-100);
+}
+
+.home-button:hover {
+  background-color: var(--accent-200);
+  color: var(--bg-100);
+}
+
+.search-input {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--bg-300);
+  border-radius: 4px;
+  background-color: var(--bg-100);
+  color: var(--text-100);
+  min-width: 200px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-200);
+}
+
+.search-button {
+  background-color: var(--accent-100);
+  color: var(--bg-100);
+}
+
+.search-button:hover {
+  background-color: var(--accent-200);
+}
+
+.profile-button {
+  background-color: var(--primary-100);
+  color: var(--text-100);
+}
+
+.profile-button:hover {
+  background-color: var(--primary-200);
+}
+
+.logout-button {
+  background-color: var(--bg-300);
+  color: var(--text-100);
+}
+
+.logout-button:hover {
+  background-color: var(--primary-100);
+}
+
+.login-button {
+  background-color: var(--accent-100);
+  color: var(--bg-100);
+}
+
+.login-button:hover {
+  background-color: var(--accent-200);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navigation {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .search-form {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .search-input {
+    width: 100%;
+    min-width: unset;
+  }
+}
