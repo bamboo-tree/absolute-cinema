@@ -1,5 +1,6 @@
 import Navigation from "./Navigation"
 import Authorize from "../Authorize"
+import AdminaDashboard from "./AdminDashboard"
 
 
 const Home = () => {
@@ -9,8 +10,7 @@ const Home = () => {
       <Navigation />
       <Authorize requiredRoles={['ADMIN']}>
         <section className="admin-section">
-          <h2>Panel administracyjny</h2>
-          <p>Tutaj są funkcje dostępne tylko dla administratorów</p>
+          <AdminaDashboard />
         </section>
       </Authorize>
       <Authorize requiredRoles={['USER']}>

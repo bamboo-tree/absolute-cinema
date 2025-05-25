@@ -228,7 +228,7 @@ router.get('/get_all_users', authenticateToken, authorizeAdmin, async (req, res)
       return res.status(404).json({ message: "No users found" });
 
     // send users
-    res.status(200).json(users);
+    res.status(200).json({ users: users, message: "Users fetched successfully" });
     console.log("Users fetched successfully")
   }
   catch (error) {

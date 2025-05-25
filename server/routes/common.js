@@ -77,7 +77,7 @@ router.get('/get_all_movies', async (req, res) => {
       return res.status(404).json({ message: "No movies found" });
 
     // send movies
-    res.status(200).json(movies);
+    res.status(200).json({ movies: movies, message: "Movies fetched successfully" });
     console.log("Movies fetched successfully")
 
   }
@@ -96,7 +96,7 @@ router.get('/get_movie/:title', async (req, res) => {
       return res.status(404).json({ message: "Movie not found" });
 
     // send movie
-    res.status(200).json(movie);
+    res.status(200).json({ movie: movie });
     console.log("Movie fetched successfully")
 
   }

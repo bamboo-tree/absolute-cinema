@@ -13,6 +13,7 @@
 .logo h1 {
   color: var(--primary-100);
   margin: 0;
+  justify-content: baseline;
   font-size: 1.8rem;
   cursor: pointer;
   transition: color 0.3s ease;
