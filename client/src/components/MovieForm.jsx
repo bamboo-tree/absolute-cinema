@@ -171,16 +171,18 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
 
   const handleGalleryChange = (e) => {
     const files = Array.from(e.target.files);
-    const galleryUrls = files.map(file => URL.createObjectURL(file));
+    setGalleryFiles(prev => [...prev, ...files]);
 
-    // Filtrowanie błędnych/nullowych/nie-stringowych wartości
-    const cleanGallery = galleryUrls.filter(url => url && typeof url === 'string');
+    const newUrls = files.map(file => URL.createObjectURL(file));
+    const cleanGallery = newUrls.filter(url => url && typeof url === 'string');
 
-    setFormData(prev => ({ ...prev, gallery: cleanGallery }));
+    setFormData(prev => ({ ...prev, gallery: [...prev.gallery, ...cleanGallery] }));
   };
 
   const removeGalleryImage = (index) => {
-    if (!formData.gallery[index].startsWith('data:')) {
+    const isNewImage = formData.gallery[index]?.startsWith('blob:') || formData.gallery[index]?.startsWith('data:');
+
+    if (!isNewImage) {
       setFilesToRemove(prev => [...prev, index]);
     }
 
@@ -189,6 +191,7 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
       gallery: prev.gallery.filter((_, i) => i !== index)
     }));
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -201,8 +204,8 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
       // Add standard fields
       formDataToSend.append('title', formData.title);
       formDataToSend.append('description', formData.description);
-      formDataToSend.append('directors', JSON.stringify(formData.directors));
-      formDataToSend.append('cast', JSON.stringify(formData.cast));
+      formDataToSend.append('directors', formData.directors.join(','));
+      formDataToSend.append('cast', formData.cast.join(','));
       formDataToSend.append('releaseDate', formData.releaseDate);
 
       // Add thumbnail and gallery files
@@ -227,7 +230,6 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
           }
         });
       } else {
-        // Dodanie nowego filmu
         await api.post('/sudo/add_movie', formDataToSend, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`,

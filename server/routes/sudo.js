@@ -115,36 +115,37 @@ router.put('/update_movie/:id', authenticateToken, authorizeAdmin, upload.fields
 
     // thumbnail
     if (req.files?.thumbnail) {
-      // delete old file
       if (movie.thumbnail) {
-        const oldPath = path.join(__dirname, '../public', movie.thumbnail);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        const oldThumbPath = path.join(__dirname, '../public', movie.thumbnail);
+        if (fs.existsSync(oldThumbPath)) fs.unlinkSync(oldThumbPath);
       }
       updateData.thumbnail = `/uploads/movies/${req.files.thumbnail[0].filename}`;
     }
 
     // gallery
-    if (req.files?.gallery) {
-      const newGallery = req.files.gallery.map(file =>
-        `/uploads/movies/${file.filename}`
-      );
-      updateData.gallery = [...movie.gallery, ...newGallery];
-    }
+    let currentGallery = [...movie.gallery];
 
     // remove old images from gallery
     if (req.body.removeGallery) {
-      const idsToRemove = JSON.parse(req.body.removeGallery);
-      idsToRemove.forEach(id => {
-        const imgPath = movie.gallery[id];
-        if (imgPath) {
-          const fullPath = path.join(__dirname, '../public', imgPath);
-          if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      const removeIndexes = JSON.parse(req.body.removeGallery);
+      removeIndexes.sort((a, b) => b - a); // usuwaj od końca, by nie przestawić indeksów
+
+      removeIndexes.forEach(index => {
+        const filePath = currentGallery[index];
+        if (filePath) {
+          const absolutePath = path.join(__dirname, '../public', filePath);
+          if (fs.existsSync(absolutePath)) fs.unlinkSync(absolutePath);
+          currentGallery.splice(index, 1);
         }
       });
-      updateData.gallery = movie.gallery.filter((_, index) =>
-        !idsToRemove.includes(index.toString())
-      );
     }
+
+    if (req.files?.gallery) {
+      const newImages = req.files.gallery.map(file => `/uploads/movies/${file.filename}`);
+      currentGallery = [...currentGallery, ...newImages];
+    }
+
+    updateData.gallery = updatedGallery;
 
     // update movie data
     const updatedMovie = await Movie.findByIdAndUpdate(
