@@ -1,22 +1,151 @@
-/* Dodatkowe style dla przesyłania plików */
-.form-group input[type="file"] {
-  width: 100%;
-  padding: 0.5rem;
+/* Movie Form Container */
+.movie-form-container {
   background-color: var(--bg-200);
-  border: 1px dashed var(--primary-200);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  margin: 1rem auto;
+  max-width: 800px;
+}
+
+.movie-form-container h2 {
+  color: var(--primary-100);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+/* Messages */
+.success-message {
+  background-color: var(--accent-100);
+  color: var(--bg-100);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.error-message {
+  background-color: var(--primary-100);
+  color: var(--text-100);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-100);
+  font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="file"],
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--bg-300);
+  border: 1px solid var(--bg-100);
+  border-radius: 4px;
+  color: var(--text-100);
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-200);
+}
+
+.form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Array Inputs */
+.array-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.array-input input {
+  flex-grow: 1;
+}
+
+.array-input button {
+  padding: 0 1rem;
+  background-color: var(--primary-200);
+  color: var(--bg-100);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.array-input button:hover {
+  background-color: var(--accent-100);
+}
+
+.array-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.array-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--bg-300);
   border-radius: 4px;
   color: var(--text-100);
 }
 
+.array-item button {
+  background: none;
+  border: none;
+  color: var(--primary-100);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 0.25rem;
+  transition: color 0.3s ease;
+}
+
+.array-item button:hover {
+  color: var(--accent-100);
+}
+
+/* Image Previews */
 .image-preview {
   margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
 .thumbnail-preview {
   max-width: 200px;
   max-height: 200px;
   border-radius: 4px;
-  border: 1px solid var(--bg-200);
+  border: 2px solid var(--bg-100);
+}
+
+.image-info {
+  color: var(--text-200);
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 .gallery-preview {
@@ -37,7 +166,7 @@
   height: 100%;
   object-fit: cover;
   border-radius: 4px;
-  border: 1px solid var(--bg-200);
+  border: 2px solid var(--bg-100);
 }
 
 .remove-image {
@@ -45,7 +174,7 @@
   top: -10px;
   right: -10px;
   background-color: var(--primary-100);
-  color: white;
+  color: var(--text-100);
   border: none;
   border-radius: 50%;
   width: 24px;
@@ -55,18 +184,68 @@
   justify-content: center;
   cursor: pointer;
   font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
-.progress-bar {
-  width: 100%;
-  background-color: var(--bg-200);
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.progress {
-  height: 10px;
+.remove-image:hover {
   background-color: var(--accent-100);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.submit-button {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--primary-100);
+  color: var(--text-100);
+  border: none;
   border-radius: 4px;
-  transition: width 0.3s ease;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: var(--primary-200);
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--bg-300);
+  color: var(--text-100);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background-color: var(--bg-100);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .movie-form-container {
+    padding: 1rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .submit-button,
+  .cancel-button {
+    width: 100%;
+  }
 }
