@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import '../styles/manage.css';
 
-import MovieForm from './MovieForm';
+// import MovieForm from './MovieForm';
 
 const ManageMovies = () => {
   const [movies, setMovies] = useState([]);
-  const [isEdit, setIsEdit] = useState(false);
+  // const [isEdit, setIsEdit] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedMovieId, setSelectedMovieId] = useState(null);
+  // const [selectedMovieId, setSelectedMovieId] = useState(null);
 
   // Fetch users
   const fetchMovies = async () => {
@@ -42,10 +42,10 @@ const ManageMovies = () => {
   }
 
   // Edit movies
-  const handleEditMovie = async (id) => {
-    setIsEdit(true);
-    setSelectedMovieId(id);
-  }
+  // const handleEditMovie = async (id) => {
+  //   setIsEdit(true);
+  //   setSelectedMovieId(id);
+  // }
 
   // Render error if exists
   if (error) {
@@ -56,7 +56,7 @@ const ManageMovies = () => {
     <div className="list-container">
       <h2>Manage Movies</h2>
       {/* Edit existing movie */}
-      {isEdit && (
+      {/* {isEdit && (
         <MovieForm
           movieId={selectedMovieId}
           onCancel={() => setIsEdit(false)}
@@ -64,10 +64,10 @@ const ManageMovies = () => {
             setIsEdit(false);
           }}
         />
-      )}
+      )} */}
 
       {/* Display movies */}
-      {(!isEdit && movies.length === 0) ? (
+      {(movies.length === 0) ? (
         <p>No movies found</p>
       ) : (
         <table className="table">
@@ -76,7 +76,7 @@ const ManageMovies = () => {
               <th>Title</th>
               <th>Year</th>
               <th>Id</th>
-              <th>Edit</th>
+              {/* <th>Edit</th> */}
               <th>Delete</th>
             </tr>
           </thead>
@@ -86,13 +86,13 @@ const ManageMovies = () => {
                 <td>{movie.title}</td>
                 <td>{movie.releaseDate.split('T')[0]}</td>
                 <td>{movie._id}</td>
-                <td>
+                {/* <td>
                   <button
                     className="button"
                     onClick={() => handleEditMovie(movie._id)}>
                     Edit
                   </button>
-                </td>
+                </td> */}
                 <td>
                   <button
                     className="button"
