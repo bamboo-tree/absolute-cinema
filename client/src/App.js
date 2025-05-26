@@ -4,6 +4,7 @@ import Unauthorized from "./components/Unauthorized"
 import AuthApp from "./components/AuthApp"
 import Home from "./components/Home"
 import NotFound from "./components/NotFound"
+import Profile from "./components/Profile"
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="/404" element={<NotFound />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<Navigate to="/404" />} />
     </Routes>
   )

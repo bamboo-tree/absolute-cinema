@@ -12,26 +12,19 @@
   --bg-300: #434343;
 }
 
-/* :root {
-  --primary-100: #d44900;
-  --primary-200: #ff7a37;
-  --primary-300: #ffdf96;
-  --accent-100: #ef7676;
-  --accent-200: #831223;
-  --text-100: #fff8f8;
-  --text-200: #e0d9d9;
-  --bg-100: #212121;
-  --bg-200: #303030;
-  --bg-300: #484848;
-} */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
+html,
 body {
   background:
     linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
     url('../../public/images/background.jpg') fixed center/cover;
   min-height: 100vh;
   font-family: "Roboto", sans-serif;
-  font-optical-sizing: auto;
   font-weight: 600;
   font-style: normal;
   color: var(--text-100);

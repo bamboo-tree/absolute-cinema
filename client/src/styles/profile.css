@@ -1,0 +1,196 @@
+.user-profile-container {
+  max-width: 800px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background-color: var(--bg-200);
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.profile-header h2 {
+  font-size: 2rem;
+  color: var(--primary-300);
+}
+
+.edit-button {
+  background-color: var(--primary-100);
+  color: var(--text-100);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.edit-button:hover {
+  background-color: var(--primary-200);
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-field {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--bg-300);
+  padding-bottom: 0.5rem;
+}
+
+.profile-field label {
+  color: var(--text-200);
+  font-weight: bold;
+}
+
+.profile-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.profile-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--accent-100);
+}
+
+.profile-form input {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--bg-300);
+  background-color: var(--bg-300);
+  color: var(--text-100);
+}
+
+.profile-form input:focus {
+  border-color: var(--accent-100);
+  outline: none;
+  background-color: var(--bg-200);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.save-button {
+  background-color: var(--accent-100);
+  color: var(--bg-100);
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.save-button:hover {
+  background-color: var(--accent-200);
+  color: var(--text-100);
+}
+
+.cancel-button {
+  background-color: transparent;
+  color: var(--text-200);
+  border: 1px solid var(--text-200);
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cancel-button:hover {
+  background-color: var(--bg-300);
+  border-color: var(--text-100);
+  color: var(--text-100);
+}
+
+.success-message,
+.error-message {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.success-message {
+  background-color: #28a74544;
+  color: #28a745;
+}
+
+.error-message {
+  background-color: #dc354544;
+  color: #dc3545;
+}
+
+.delete-section {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background-color: var(--bg-300);
+  border-left: 4px solid var(--primary-100);
+  border-radius: 8px;
+}
+
+.delete-section h3 {
+  color: var(--primary-100);
+  margin-bottom: 1rem;
+}
+
+.delete-button {
+  background-color: transparent;
+  color: var(--primary-100);
+  border: 1px solid var(--primary-100);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: var(--primary-100);
+  color: var(--bg-100);
+}
+
+.delete-confirmation p {
+  margin-bottom: 1rem;
+  color: var(--text-200);
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.confirm-delete {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.confirm-delete:hover {
+  background-color: #b02a37;
+}
+
+.cancel-delete {
+  background-color: transparent;
+  border: 1px solid var(--text-200);
+  color: var(--text-200);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cancel-delete:hover {
+  background-color: var(--bg-300);
+  color: var(--text-100);
+}
