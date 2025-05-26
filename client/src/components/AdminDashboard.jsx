@@ -2,9 +2,9 @@ import { useState } from "react";
 
 import ManageUsers from "./ManageUsers";
 import ManageMovies from "./ManageMovies";
+import MovieForm from "./MovieForm";
 
 import "../styles/adminDashboard.css";
-
 
 
 
@@ -31,7 +31,14 @@ const AdminaDashboard = () => {
       <div>
         {actionName === "manage-users" && <ManageUsers />}
         {actionName === "manage-movies" && <ManageMovies />}
-        {/* {actionName === "add-movie" && <div>Add Movie Section</div>} */}
+        {actionName === "add-movie" && (
+          <MovieForm
+            onCancel={() => setActionName("manage-movies")}
+            onSuccess={() => {
+              setActionName("manage-movies");
+            }}
+          />
+        )}
       </div>
     </div>
   );

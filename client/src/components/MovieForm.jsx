@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../api';
 
-const MovieForm = ({ movieTitle, onCancel }) => {
+import '../styles/movieForm.css';
+
+const MovieForm = ({ movieId, onCancel, onSuccess }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -12,37 +14,117 @@ const MovieForm = ({ movieTitle, onCancel }) => {
     gallery: []
   });
 
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
+  const [filesToRemove, setFilesToRemove] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Temporary inputs for array fields
   const [directorsInput, setDirectorsInput] = useState('');
   const [castInput, setCastInput] = useState('');
 
+  // Cache for images
+  const imageCache = useRef({
+    thumbnails: new Map(),
+    gallery: new Map()
+  });
+
+  // Function to build full image URL
+  const buildImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    if (path.startsWith('/uploads/movies/')) {
+      return `${process.env.REACT_APP_API_BASE_URL || ''}${path}`;
+    }
+    return `${process.env.REACT_APP_API_BASE_URL || ''}/uploads/movies/${path}`;
+  };
+
+  // Fetch and cache images
+  const fetchAndCacheImage = async (path) => {
+    const url = buildImageUrl(path);
+    if (!url) return null;
+
+    if (imageCache.current.thumbnails.has(url) || imageCache.current.gallery.has(url)) {
+      return url;
+    }
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Image not found');
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      if (url.includes('thumbnail')) {
+        imageCache.current.thumbnails.set(url, objectUrl);
+      } else {
+        imageCache.current.gallery.set(url, objectUrl);
+      }
+
+      return objectUrl;
+    } catch (error) {
+      console.error('Error caching image:', error);
+      return null;
+    }
+  };
+
+  // Cleaning cache on unmount
   useEffect(() => {
-    const fetchMovieData = async () => {
+    return () => {
+      // Zwolnienie URL-i obiektów
+      imageCache.current.thumbnails.forEach(url => URL.revokeObjectURL(url));
+      imageCache.current.gallery.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  // Load movie data if movieId is provided
+  useEffect(() => {
+    const loadMovieData = async () => {
+
+      if (!movieId) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await api.get(`/api/common/get_movie/${movieTitle}`);
+        const response = await api.get(`/common/get_movie/${movieId}`);
         const movie = response.data.movie;
 
-        setFormData({
-          title: movie.title,
-          description: movie.description,
-          directors: movie.directors,
-          cast: movie.cast,
-          releaseDate: movie.releaseDate.split('T')[0],
-          thumbnail: movie.thumbnail,
-          gallery: movie.gallery
-        });
+        // Fetch and cache thumbnail
+        const thumbUrl = await fetchAndCacheImage(movie.thumbnail);
 
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch movie data');
+        // Fetch and cache gallery images
+        const galleryUrlsSet = new Set();
+        const galleryUrls = [];
+
+        for (const imgPath of movie.gallery) {
+          const cachedUrl = await fetchAndCacheImage(imgPath);
+          const finalUrl = cachedUrl || buildImageUrl(imgPath);
+
+          if (finalUrl && !galleryUrlsSet.has(finalUrl)) {
+            galleryUrlsSet.add(finalUrl);
+            galleryUrls.push(finalUrl);
+          }
+        }
+
+        setFormData({
+          ...movie,
+          thumbnail: thumbUrl || buildImageUrl(movie.thumbnail),
+          gallery: galleryUrls,
+          releaseDate: movie.releaseDate.split('T')[0]
+        });
+      } catch (error) {
+        console.error('Error loading movie:', error);
+        setError('Failed to load movie data');
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (movieTitle) {
-      fetchMovieData();
-    }
+    loadMovieData();
   }, [movieId]);
 
   const handleInputChange = (e) => {
@@ -67,11 +149,18 @@ const MovieForm = ({ movieTitle, onCancel }) => {
     }));
   };
 
+  const previewImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleThumbnailChange = (e) => {
     const file = e.target.files[0];
-    if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+    if (file) {
       setThumbnailFile(file);
-      // Podgląd obrazka
       const reader = new FileReader();
       reader.onload = () => {
         setFormData(prev => ({ ...prev, thumbnail: reader.result }));
@@ -81,124 +170,195 @@ const MovieForm = ({ movieTitle, onCancel }) => {
   };
 
   const handleGalleryChange = (e) => {
-    const files = Array.from(e.target.files).filter(file =>
-      file.type === 'image/jpeg' || file.type === 'image/png'
-    );
-    setGalleryFiles(prev => [...prev, ...files]);
+    const files = Array.from(e.target.files);
+    const galleryUrls = files.map(file => URL.createObjectURL(file));
 
-    // Podgląd galerii
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFormData(prev => ({
-          ...prev,
-          gallery: [...prev.gallery, reader.result]
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
+    // Filtrowanie błędnych/nullowych/nie-stringowych wartości
+    const cleanGallery = galleryUrls.filter(url => url && typeof url === 'string');
+
+    setFormData(prev => ({ ...prev, gallery: cleanGallery }));
   };
 
   const removeGalleryImage = (index) => {
-    setGalleryFiles(prev => prev.filter((_, i) => i !== index));
+    if (!formData.gallery[index].startsWith('data:')) {
+      setFilesToRemove(prev => [...prev, index]);
+    }
+
     setFormData(prev => ({
       ...prev,
       gallery: prev.gallery.filter((_, i) => i !== index)
     }));
   };
 
-  const uploadFile = async (file, type) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', type);
-
-    const response = await axios.post('/api/upload', formData, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-        'Content-Type': 'multipart/form-data'
-      },
-      onUploadProgress: (progressEvent) => {
-        const percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        setUploadProgress(percentCompleted);
-      }
-    });
-
-    return response.data.path;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      let thumbnailPath = formData.thumbnail;
-      let galleryPaths = [...formData.gallery];
+      const formDataToSend = new FormData();
 
-      // Upload thumbnail if new file was selected
+      // Add standard fields
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('directors', JSON.stringify(formData.directors));
+      formDataToSend.append('cast', JSON.stringify(formData.cast));
+      formDataToSend.append('releaseDate', formData.releaseDate);
+
+      // Add thumbnail and gallery files
       if (thumbnailFile) {
-        thumbnailPath = await uploadFile(thumbnailFile, 'thumbnail');
+        formDataToSend.append('thumbnail', thumbnailFile);
       }
 
-      // Upload new gallery files
-      if (galleryFiles.length > 0) {
-        const newPaths = await Promise.all(
-          galleryFiles.map(file => uploadFile(file, 'gallery'))
-        );
-        galleryPaths = [...formData.gallery.filter(path => !path.startsWith('data:')), ...newPaths];
-      }
-
-      // Prepare final data
-      const finalData = {
-        ...formData,
-        thumbnail: thumbnailPath,
-        gallery: galleryPaths
-      };
-
-      // Submit to server
-      await axios.put(`/api/movies/${movieId}`, finalData, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
+      galleryFiles.forEach(file => {
+        formDataToSend.append('gallery', file);
       });
 
+      // If editing an existing movie, include files to remove
+      if (movieId && filesToRemove.length > 0) {
+        formDataToSend.append('removeGallery', JSON.stringify(filesToRemove));
+      }
+
+      if (movieId) {
+        await api.put(`/sudo/update_movie/${movieId}`, formDataToSend, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        // Dodanie nowego filmu
+        await api.post('/sudo/add_movie', formDataToSend, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      }
+
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => {
+        setSuccess(false);
+        if (onSuccess) onSuccess();
+      }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update movie');
+      setError(err.response?.data?.message || 'Operation failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   if (loading) return <div className="loading">Loading movie data...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
 
   return (
     <div className="movie-form-container">
       <h2>{movieId ? 'Edit Movie' : 'Add New Movie'}</h2>
-
-      {success && (
-        <div className="success-message">Movie updated successfully!</div>
-      )}
-
-      {uploadProgress > 0 && uploadProgress < 100 && (
-        <div className="progress-bar">
-          <div className="progress" style={{ width: `${uploadProgress}%` }}></div>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit}>
-        {/* ... (pozostałe pola formularza bez zmian) ... */}
+        <div className="form-group">
+          <label>Title*:</label>
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
 
         <div className="form-group">
-          <label>Thumbnail:</label>
-          <input
-            type="file"
-            accept="image/jpeg, image/png"
-            onChange={handleThumbnailChange}
+          <label>Description*:</label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            required
           />
+        </div>
+
+        <div className="form-group">
+          <label>Directors*:</label>
+          <div className="array-input">
+            <input
+              type="text"
+              value={directorsInput}
+              onChange={(e) => setDirectorsInput(e.target.value)}
+              placeholder="Add director"
+            />
+            <button
+              type="button"
+              onClick={() => handleArrayAdd('directors', directorsInput, setDirectorsInput)}
+            >
+              Add
+            </button>
+          </div>
+          <div className="array-items">
+            {formData.directors.map((director, index) => (
+              <div key={index} className="array-item">
+                {director}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveItem('directors', index)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Cast*:</label>
+          <div className="array-input">
+            <input
+              type="text"
+              value={castInput}
+              onChange={(e) => setCastInput(e.target.value)}
+              placeholder="Add cast member"
+            />
+            <button
+              type="button"
+              onClick={() => handleArrayAdd('cast', castInput, setCastInput)}
+            >
+              Add
+            </button>
+          </div>
+          <div className="array-items">
+            {formData.cast.map((member, index) => (
+              <div key={index} className="array-item">
+                {member}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveItem('cast', index)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Release Date*:</label>
+          <input
+            type="date"
+            name="releaseDate"
+            value={formData.releaseDate}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Thumbnail*:</label>
+          <input type="file" accept="image/*" onChange={handleThumbnailChange} />
           {formData.thumbnail && (
             <div className="image-preview">
               <img
-                src={formData.thumbnail}
+                src={formData.thumbnail || '/images/placeholder.png'}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/images/placeholder.png';
+                }}
                 alt="Thumbnail preview"
                 className="thumbnail-preview"
               />
@@ -210,18 +370,32 @@ const MovieForm = ({ movieTitle, onCancel }) => {
           <label>Gallery Images:</label>
           <input
             type="file"
-            accept="image/jpeg, image/png"
+            accept="image/*"
             onChange={handleGalleryChange}
             multiple
           />
           <div className="gallery-preview">
-            {formData.gallery.map((image, index) => (
+            {formData.gallery.map((img, index) => (
               <div key={index} className="gallery-item">
-                <img src={image} alt={`Gallery ${index}`} />
+                {img && (
+                  <img
+                    src={img}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/images/placeholder.png';
+                    }}
+                    alt={`Gallery item ${index}`}
+                  />
+                )}
+                {!img && (
+                  <img
+                    src="/images/placeholder.png"
+                    alt="Placeholder"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => removeGalleryImage(index)}
-                  className="remove-image"
                 >
                   ×
                 </button>
@@ -230,11 +404,32 @@ const MovieForm = ({ movieTitle, onCancel }) => {
           </div>
         </div>
 
+
         <div className="form-actions">
-          <button type="submit" className="submit-button">Save Changes</button>
-          <button type="button" onClick={onCancel} className="cancel-button">Cancel</button>
+          <button
+            type="submit"
+            className="submit-button"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Processing...' : 'Save'}
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="cancel-button"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
         </div>
       </form>
+      {success && (
+        <div className="success-message">
+          {movieId ? 'Movie updated successfully!' : 'Movie added successfully!'}
+        </div>
+      )}
+
+      {error && <div className="error-message">{error}</div>}
     </div>
   );
 };

@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import '../styles/manage.css';
 
+import MovieForm from './MovieForm';
+
 const ManageMovies = () => {
   const [movies, setMovies] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
   const [error, setError] = useState(null);
-
+  const [selectedMovieId, setSelectedMovieId] = useState(null);
 
   // Fetch users
   const fetchMovies = async () => {
@@ -40,9 +42,9 @@ const ManageMovies = () => {
   }
 
   // Edit movies
-  const handleEditMovie = async (title) => {
-    // This function can be implemented to handle movie editing
-    console.log(`Edit movie: ${title}`);
+  const handleEditMovie = async (id) => {
+    setIsEdit(true);
+    setSelectedMovieId(id);
   }
 
   // Render error if exists
@@ -54,7 +56,15 @@ const ManageMovies = () => {
     <div className="list-container">
       <h2>Manage Movies</h2>
       {/* Edit existing movie */}
-      {isEdit && <MovieForm movieTitle={movieTitle} onCancel={() => setIsEdit(false)} />}
+      {isEdit && (
+        <MovieForm
+          movieId={selectedMovieId}
+          onCancel={() => setIsEdit(false)}
+          onSuccess={() => {
+            setIsEdit(false);
+          }}
+        />
+      )}
 
       {/* Display movies */}
       {(!isEdit && movies.length === 0) ? (
@@ -79,7 +89,7 @@ const ManageMovies = () => {
                 <td>
                   <button
                     className="button"
-                    onClick={() => handleEditMovie(movie.title)}>
+                    onClick={() => handleEditMovie(movie._id)}>
                     Edit
                   </button>
                 </td>
