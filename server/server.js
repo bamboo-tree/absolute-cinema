@@ -17,7 +17,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')))
+app.use('/uploads', express.static(path.join(__dirname, './public/uploads')))
 
 // routes
 app.use('/api/common', commonRoute)

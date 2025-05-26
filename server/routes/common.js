@@ -2,6 +2,9 @@ const router = require('express').Router()
 const bcrypt = require('bcrypt')
 const joi = require('joi')
 const complexity = require('joi-password-complexity')
+const path = require('path');
+const express = require('express');
+
 
 const User = require('../models/User')
 const Movie = require('../models/Movie')
@@ -87,11 +90,12 @@ router.get('/get_all_movies', async (req, res) => {
   }
 })
 
-// get movie by title
-router.get('/get_movie/:title', async (req, res) => {
+// get movie by id
+router.get('/get_movie/:id', async (req, res) => {
   try {
     // find movie by title
-    const movie = await Movie.findOne({ title: req.params.title }).select('-__v -createdAt');
+    const movie = await Movie.findById(req.params.id).select('-__v -createdAt');
+    // const movie = await Movie.findOne({ title: req.params.title }).select('-__v -createdAt');
     if (!movie)
       return res.status(404).json({ message: "Movie not found" });
 
