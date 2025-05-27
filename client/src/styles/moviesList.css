@@ -1,0 +1,30 @@
+.movie-list {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: var(--text-100);
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+}
+
+.movie-column {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+}
+
+.loading,
+.error {
+  color: var(--text-100);
+  text-align: center;
+  padding: 40px;
+  font-size: 1.2rem;
+  background-color: var(--bg-300);
+  border-radius: 8px;
+  margin: 20px;
+}
