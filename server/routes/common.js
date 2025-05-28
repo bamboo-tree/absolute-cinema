@@ -3,8 +3,6 @@ const bcrypt = require('bcrypt')
 const joi = require('joi')
 const complexity = require('joi-password-complexity')
 const path = require('path');
-const express = require('express');
-
 
 const User = require('../models/User')
 const Movie = require('../models/Movie')
@@ -75,7 +73,7 @@ router.post('/register', async (req, res) => {
 router.get('/get_all_movies', async (req, res) => {
   try {
     // find all movies
-    const movies = await Movie.find({}).select('-__v -createdAt -reviews');
+    const movies = await Movie.find().select('-__v -createdAt');
     if (!movies)
       return res.status(404).json({ message: "No movies found" });
 

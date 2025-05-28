@@ -60,7 +60,8 @@ router.post('/add_movie', authenticateToken, authorizeAdmin, upload.fields([{ na
       cast: processNames(cast),
       releaseDate,
       thumbnail: `/uploads/movies/${thumbnailPath}`,
-      gallery: galleryPaths.map(filename => `/uploads/movies/${filename}`)
+      gallery: galleryPaths.map(filename => `/uploads/movies/${filename}`),
+      reviews: []
     })
     await newMovie.save()
 
