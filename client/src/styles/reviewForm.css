@@ -1,0 +1,104 @@
+.review-form {
+  background-color: var(--bg-300);
+  padding: 25px;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.review-form h3 {
+  color: var(--text-100);
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-100);
+  font-weight: bold;
+}
+
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--bg-200);
+  border-radius: 4px;
+  background-color: var(--bg-200);
+  color: var(--text-100);
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-100);
+  box-shadow: 0 0 0 2px var(--primary-200);
+}
+
+.form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFC300'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
+  padding-right: 35px;
+}
+
+.form-error {
+  color: var(--primary-100);
+  margin: 15px 0;
+  text-align: center;
+  font-weight: bold;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.submit-button,
+.cancel-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 1rem;
+}
+
+.submit-button {
+  background-color: var(--accent-100);
+  color: var(--bg-100);
+}
+
+.submit-button:hover {
+  background-color: var(--accent-200);
+  transform: translateY(-2px);
+}
+
+.cancel-button {
+  background-color: var(--bg-200);
+  color: var(--text-100);
+}
+
+.cancel-button:hover {
+  background-color: var(--primary-200);
+  transform: translateY(-2px);
+}

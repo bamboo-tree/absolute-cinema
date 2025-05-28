@@ -119,14 +119,16 @@ h2 {
 
 .reviews-button-container {
   text-align: center;
-  margin: 20px 0;
+  margin: 20px 0px;
 }
 
-.reviews-toggle-button {
+.reviews-toggle-button,
+.add-review-button {
   background-color: var(--accent-100);
   color: var(--bg-100);
   border: none;
   padding: 12px 24px;
+  margin: 0 20px;
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
@@ -134,10 +136,17 @@ h2 {
   font-size: 1.1rem;
 }
 
-.reviews-toggle-button:hover {
+.reviews-toggle-button:hover,
+.add-review-button:hover {
   background-color: var(--accent-200);
   color: var(--text-100);
   transform: translateY(-2px);
+}
+
+.add-review-button:disabled {
+  background-color: var(--bg-400);
+  color: var(--text-300);
+  cursor: not-allowed;
 }
 
 .reviews-section {
