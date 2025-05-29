@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import api from '../api';
+import api from '../../api';
 
-import Navigation from './Navigation';
-import '../styles/profile.css';
-import '../styles/main.css';
+import Navigation from '../Navigation';
+import './style.css';
 
 const UserProfile = () => {
   const [userData, setUserData] = useState({
@@ -12,21 +11,21 @@ const UserProfile = () => {
     lastName: '',
     email: ''
   });
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [formErrors, setFormErrors] = useState([]);
 
   const [formData, setFormData] = useState({
-    username: '',
     firstName: '',
     lastName: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [formErrors, setFormErrors] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -52,7 +51,6 @@ const UserProfile = () => {
         setLoading(false);
       }
     };
-
     fetchUserData();
   }, []);
 
@@ -79,7 +77,7 @@ const UserProfile = () => {
 
     try {
       const updateData = {
-        username: formData.username,
+        username: userData.username, // Username is not editable
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -92,6 +90,7 @@ const UserProfile = () => {
         }
       });
 
+      // Update formData with the latest user data
       setUserData(response.data.user);
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
@@ -106,12 +105,10 @@ const UserProfile = () => {
       if (serverErrors && Array.isArray(serverErrors)) {
         setFormErrors(serverErrors);
       } else if (message) {
-        // Pokazujemy błąd jako wiadomość globalną
         setFormErrors([message]);
       } else {
         setFormErrors(['Unexpected error occurred']);
       }
-
       setIsEditing(true);
     }
   };
@@ -185,17 +182,6 @@ const UserProfile = () => {
           </div>
         ) : (
           <form className="profile-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="username">Username</label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
             <div className="form-group">
               <label htmlFor="firstName">First Name</label>
               <input
