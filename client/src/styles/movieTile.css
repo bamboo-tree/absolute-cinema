@@ -167,32 +167,64 @@ h2 {
 
 .review-item {
   background-color: var(--bg-300);
-  padding: 20px;
+  padding: 15px;
   border-radius: 4px;
   margin-bottom: 15px;
+  position: relative;
 }
 
 .review-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
   align-items: center;
+  margin-bottom: 10px;
+}
+
+.review-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-button,
+.delete-button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-button {
+  background-color: var(--accent-100);
+  color: var(--bg-100);
+}
+
+.edit-button:hover {
+  background-color: var(--accent-200);
+}
+
+.delete-button {
+  background-color: var(--primary-100);
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: var(--primary-200);
 }
 
 .review-rating {
   color: var(--accent-100);
   font-weight: bold;
-  font-size: 1.2rem;
+  margin-left: 10px;
 }
 
 .review-comment {
-  margin-bottom: 10px;
-  line-height: 1.5;
-  font-size: 1.05rem;
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
 
 .review-date {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: var(--text-200);
-  text-align: right;
 }

@@ -270,14 +270,14 @@ router.delete('/delete_review', authenticateToken, authorizeUser, async (req, re
       return res.status(404).json({ message: "Movie not found." });
     }
 
-    // find review by user id
-    const review = movie.reviews.find(review => review.user.equals(req.user._id));
-    if (review === -1) {
+    // find index of review by user id
+    const reviewIndex = movie.reviews.findIndex(review => review.user.equals(req.user._id));
+    if (reviewIndex === -1) {
       return res.status(404).json({ message: "Review not found." });
     }
 
-    // remove review from movie and save
-    movie.reviews.splice(review, 1);
+    // remove review by index
+    movie.reviews.splice(reviewIndex, 1);
     await movie.save();
 
     res.status(200).json({ message: "Review deleted successfully" });
@@ -291,6 +291,7 @@ router.delete('/delete_review', authenticateToken, authorizeUser, async (req, re
     });
   }
 });
+
 
 
 // update review

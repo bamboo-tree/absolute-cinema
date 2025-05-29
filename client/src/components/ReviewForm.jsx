@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import '../styles/reviewForm.css';
 
-const ReviewForm = ({ onSubmit, onCancel }) => {
+const ReviewForm = ({ onSubmit, onCancel, initialComment = '', initalRating = 5 }) => {
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(5); // default rating
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setComment(initialComment);
+    setRating(initalRating);
+  }, [initialComment, initalRating]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,7 +29,7 @@ const ReviewForm = ({ onSubmit, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="review-form">
-      <h3>Add Your Review</h3>
+      <h3>{initialComment ? 'Edit Your Review' : 'Add Your Review'}</h3>
 
       <div className="form-group">
         <label htmlFor="comment">Comment:</label>
@@ -56,9 +61,15 @@ const ReviewForm = ({ onSubmit, onCancel }) => {
       {error && <p className="form-error">{error}</p>}
 
       <div className="form-actions">
-        <button type="submit" className="submit-button">Submit Review</button>
+        <button type="submit" className="submit-button">
+          {initialComment ? 'Update Review' : 'Submit Review'}
+        </button>
         {onCancel && (
-          <button type="button" onClick={onCancel} className="cancel-button">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="cancel-button"
+          >
             Cancel
           </button>
         )}

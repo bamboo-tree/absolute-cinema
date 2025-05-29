@@ -9,8 +9,20 @@ import api from '../api';
 const MovieTile = ({ movie }) => {
   const [showReviews, setShowReviews] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [editingReviewId, setEditingReviewId] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [movieData, setMovieData] = useState(movie);
 
+
+
+  const refreshMovieData = async () => {
+    try {
+      const response = await api.get(`/common/get_movie/${encodeURIComponent(movie._id)}`);
+      setMovieData(response.data);
+    } catch (error) {
+      console.error('Error fetching updated movie data:', error);
+    }
+  };
 
   const getUserIdFromToken = () => {
     try {
@@ -26,7 +38,6 @@ const MovieTile = ({ movie }) => {
     }
   };
 
-
   const toggleReviews = () => {
     setShowReviews(!showReviews);
     setShowForm(false);
@@ -41,29 +52,52 @@ const MovieTile = ({ movie }) => {
 
   const handleReviewSubmit = async ({ rating, comment }) => {
     try {
-      const response = await api.post(
-        '/authorized/add_review',
-        {
-          title: movie.title,
-          rating,
-          comment
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
-
+      await api.post('/authorized/add_review', {
+        title: movie.title,
+        rating,
+        comment
+      });
       setShowForm(false);
-      setShowReviews(true);
-
-      if (response.data.review) {
-        movie.reviews.push(response.data.review);
-      }
-
+      setShowReviews(false);
+      await refreshMovieData();
     } catch (err) {
       console.error('Error submitting review:', err);
+    }
+  };
+
+  const handleEditReview = async (reviewId) => {
+    setEditingReviewId(reviewId);
+  }
+
+  const handleCancelEdit = () => {
+    setEditingReviewId(null);
+  };
+
+  const handleSubmitUpdate = async ({ comment, rating }) => {
+    try {
+      await api.put('/authorized/update_review', {
+        title: movie.title,
+        comment,
+        rating
+      });
+      setEditingReviewId(null);
+      await refreshMovieData();
+      setShowReviews(true);
+    } catch (error) {
+      console.error('Error updating review:', error);
+    }
+  };
+
+  const handleDeleteReview = async () => {
+    if (window.confirm('Are you sure you want to delete this review?')) {
+      try {
+        await api.delete('/authorized/delete_review', {
+          data: { title: movie.title }
+        });
+        await refreshMovieData();
+      } catch (error) {
+        console.error('Error deleting review:', error);
+      }
     }
   };
 
@@ -126,9 +160,9 @@ const MovieTile = ({ movie }) => {
 
 
       <div className="reviews-button-container">
-        {movie.reviews && movie.reviews.length > 0 && (
+        {movieData.reviews && movieData.reviews.length > 0 && (
           <button onClick={toggleReviews} className="reviews-toggle-button">
-            {showReviews ? 'Hide Reviews' : `Show Reviews (${movie.reviews?.length || 0})`}
+            {showReviews ? 'Hide Reviews' : `Show Reviews (${movieData.reviews.length})`}
           </button>
         )}
         <Authorize requiredRoles={['USER']}>
@@ -160,14 +194,50 @@ const MovieTile = ({ movie }) => {
           <ul className="reviews-list">
             {movie.reviews.map((review, index) => (
               <li key={index} className="review-item">
-                <div className="review-header">
-                  <strong>{review.username}</strong>
-                  <span className="review-rating">{review.rating}/10</span>
-                </div>
-                <div className="review-comment">{review.comment}</div>
-                <div className="review-date">
-                  {new Date(review.createdAt).toLocaleDateString()}
-                </div>
+                {editingReviewId ? (
+                  <ReviewForm
+                    onSubmit={handleSubmitUpdate}
+                    onCancel={handleCancelEdit}
+                    initialComment={movieData.reviews.find(r => r._id === editingReviewId)?.comment}
+                    initialRating={movieData.reviews.find(r => r._id === editingReviewId)?.rating}
+                  />
+                ) : showReviews && movieData.reviews && (
+                  <div className="reviews-section">
+                    <h3>Reviews</h3>
+                    <ul className="reviews-list">
+                      {movieData.reviews.map((review, index) => (
+                        <li key={index} className="review-item">
+                          <div className="review-header">
+                            <div>
+                              <strong>{review.username}</strong>
+                              <span className="review-rating">{review.rating}/10</span>
+                            </div>
+                            {review.user === getUserIdFromToken() && (
+                              <div className="review-actions">
+                                <button
+                                  className="edit-button"
+                                  onClick={() => handleEditReview(review._id)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  className="delete-button"
+                                  onClick={() => handleDeleteReview(review._id)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          <div className="review-comment">{review.comment}</div>
+                          <div className="review-date">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
