@@ -1,10 +1,10 @@
 import { Route, Routes, Navigate } from "react-router-dom"
 
 import Unauthorized from "./components/Unauthorized"
-import AuthApp from "./components/AuthApp"
 import Home from "./components/Home"
-import NotFound from "./components/NotFound"
+import AuthApp from "./components/AuthApp"
 import Profile from "./components/Profile"
+import NotFound from "./components/NotFound"
 
 function App() {
   return (
