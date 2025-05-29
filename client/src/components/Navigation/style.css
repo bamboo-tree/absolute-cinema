@@ -41,13 +41,12 @@
 }
 
 .home-button {
-  background-color: var(--bg-300);
-  color: var(--text-100);
+  background-color: var(--accent-100);
+  color: var(--bg-100);
 }
 
 .home-button:hover {
   background-color: var(--accent-200);
-  color: var(--bg-100);
 }
 
 .search-input {
@@ -56,7 +55,7 @@
   border-radius: 4px;
   background-color: var(--bg-100);
   color: var(--text-100);
-  min-width: 200px;
+  min-width: 300px;
 }
 
 .search-input:focus {
@@ -65,12 +64,13 @@
 }
 
 .search-button {
-  background-color: var(--accent-100);
-  color: var(--bg-100);
+  background-color: var(--bg-100);
+  color: var(--accent-100);
 }
 
 .search-button:hover {
-  background-color: var(--accent-200);
+  color: var(--bg-100);
+  background-color: var(--accent-100);
 }
 
 .profile-button {
@@ -92,12 +92,16 @@
 }
 
 .login-button {
-  background-color: var(--accent-100);
-  color: var(--bg-100);
+  background-color: var(--primary-100);
+  color: var(--text-100);
 }
 
 .login-button:hover {
-  background-color: var(--accent-200);
+  background-color: var(--primary-200);
+}
+
+.submit-error {
+  color: var(--primary-100)
 }
 
 /* Responsive adjustments */

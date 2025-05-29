@@ -91,9 +91,8 @@ router.get('/get_all_movies', async (req, res) => {
 // get movie by id
 router.get('/get_movie/:id', async (req, res) => {
   try {
-    // find movie by title
+    // find movie by id
     const movie = await Movie.findById(req.params.id).select('-__v -createdAt');
-    // const movie = await Movie.findOne({ title: req.params.title }).select('-__v -createdAt');
     if (!movie)
       return res.status(404).json({ message: "Movie not found" });
 
@@ -101,6 +100,26 @@ router.get('/get_movie/:id', async (req, res) => {
     res.status(200).json({ movie: movie });
     console.log("Movie fetched successfully")
 
+  }
+  catch (error) {
+    console.error("Error fetching movie:", error)
+    res.status(500).json({ message: "Failed to fetch movie" })
+  }
+});
+
+// get movie by title
+router.get('/get_movie/title/:title', async (req, res) => {
+  try {
+    // find movie by title
+    const movie = await Movie.findOne({
+      title: { $regex: new RegExp(`^${req.params.title}$`, 'i') }
+    }).select('-__v -createdAt');
+    if (!movie)
+      return res.status(404).json({ message: "Movie not found" });
+
+    // send movie
+    res.status(200).json({ movie: movie });
+    console.log("Movie fetched successfully")
   }
   catch (error) {
     console.error("Error fetching movie:", error)
