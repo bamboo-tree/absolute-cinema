@@ -1,13 +1,35 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root {
+  --primary-100: #FF5733;
+  --primary-200: #ff8a5f;
+  --primary-300: #fff3bf;
+  --accent-100: #FFC300;
+  --accent-200: #916600;
+  --text-100: #FFFFFF;
+  --text-200: #c0c0c0;
+  --bg-100: #1C1C1C;
+  --bg-200: #2b2b2b;
+  --bg-300: #434343;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    url('../public/images/background.jpg') fixed center/cover;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  font-family: "Roboto", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  color: var(--text-100);
+  margin: 0;
+  padding: 0;
 }
