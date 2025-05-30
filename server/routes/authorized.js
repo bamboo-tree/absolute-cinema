@@ -29,31 +29,50 @@ router.post('/login', async (req, res) => {
     // validate body
     const { error } = joi.object({
       username: joi.string().required().label("Username"),
-      password: complexity().required().label("Password"),
+      password: joi.string().required().label("Password"),
     }).validate(req.body);
 
-    if (error)
-      return res.status(400).json({ message: error.details[0].message })
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: error.details[0].message
+      });
+    }
 
-    // find user by username
     const existingUser = await User.findOne({ username: req.body.username });
-    if (!existingUser)
-      return res.status(401).json({ message: "Invalid Email or Password" })
+    if (!existingUser) {
+      return res.status(401).json({
+        success: false,
+        errorUser: "User not found"
+      });
+    }
 
-    // check password
     const validPassword = await bcrypt.compare(
       req.body.password,
       existingUser.password
-    )
-    if (!validPassword)
-      return res.status(401).json({ message: "Invalid Email or Password" })
+    );
+
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        errorPassword: "Incorrect password"
+      });
+    }
 
     // create new token for user
     const token = existingUser.generateAuthToken();
-    res.status(200).json({ token: token, message: "Logged in successfully" })
+    return res.status(200).json({
+      success: true,
+      token: token,
+      message: "Logged in successfully"
+    });
   }
   catch (error) {
-    res.status(500).json({ message: "Internal Server Error" })
+    console.error("Login error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Internal Server Error"
+    });
   }
 })
 
