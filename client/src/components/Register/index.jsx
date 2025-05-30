@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import api from '../api';
-import '../styles/auth.css';
-import '../styles/main.css';
+
+import api from '../../api';
+import '../AuthApp/auth.css';
 
 
 const Register = ({ onRegisterSuccess, onSwitchToLogin }) => {
@@ -21,7 +21,6 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // client side validation
   const validate = () => {
     const newErrors = {};
     if (!formData.username)
@@ -62,14 +61,12 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin }) => {
         password: formData.password
       });
 
-      // save token in local storage
-      localStorage.setItem('authToken', response.data.token);
       onRegisterSuccess(response.data.token);
-
     } catch (error) {
       if (error.response) {
         setApiError(error.response.data.message ||
           `Server error: ${error.response.status}`);
+        setErrors({});
       } else if (error.request) {
         setApiError('No response from server. Check your connection.');
       } else {

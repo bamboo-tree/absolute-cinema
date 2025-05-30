@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import api from '../api';
-import '../styles/auth.css';
-import '../styles/main.css';
 
-// Login component for user authentication
+import api from '../../api';
+import '../AuthApp/auth.css';
+
+
 const Login = ({ onLoginSuccess, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
     username: '',
@@ -25,31 +25,51 @@ const Login = ({ onLoginSuccess, onSwitchToRegister }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
 
     try {
+      const validationErrors = validate();
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        console.log('Validation errors:', validationErrors);
+        return;
+      }
+
       const response = await api.post('/authorized/login', {
         username: formData.username,
         password: formData.password,
       });
 
-      // save token to local storage
-      localStorage.setItem('authToken', response.data.token);
-      onLoginSuccess(response.data.token);
-      console.log("Login successful, token: ", response.data.token);
-      console.log("Local storage token: ", localStorage.getItem('authToken'));
-
+      if (response.data.success === false) {
+        setErrors({
+          api: 'Authentication failed: No token received'
+        });
+        return;
+      }
+      if (response.data.success === true) {
+        onLoginSuccess(response.data.token);
+      }
     } catch (error) {
+      console.error('Login error:', error);
+
       if (error.response) {
-        setErrors({ api: error.response.data.message });
+        const serverError = error.response.data;
+
+        setErrors({
+          username: serverError.errorUser || "",
+          password: serverError.errorPassword || "",
+          api: serverError.error ||
+            serverError.message ||
+            'Authentication failed. Please try again.'
+        });
+
       } else if (error.request) {
-        setErrors({ api: 'Network error, please try again later.' });
+        setErrors({
+          api: 'Network error. Please check your connection and try again.'
+        });
       } else {
-        setErrors({ api: 'An unexpected error occurred.' });
+        setErrors({
+          api: 'An unexpected error occurred. Please try again later.'
+        });
       }
     }
   };
@@ -87,8 +107,12 @@ const Login = ({ onLoginSuccess, onSwitchToRegister }) => {
             <span className="auth-error">{errors.password}</span>
           </div>
         </div>
-
-        <button className="auth-button" type="submit">Login</button>
+        <div className='validation-info'>
+          <span className="auth-error">{errors.api}</span>
+        </div>
+        <button className="auth-button" type="submit" >
+          Login
+        </button>
       </form>
 
       <p className="auth-link" onClick={onSwitchToRegister}>
