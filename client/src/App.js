@@ -1,5 +1,7 @@
 import { Route, Routes, Navigate } from "react-router-dom"
 
+import "./styles/main.css"
+
 import Unauthorized from "./components/Unauthorized"
 import Home from "./components/Home"
 import AuthApp from "./components/AuthApp"

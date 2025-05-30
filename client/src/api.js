@@ -23,13 +23,20 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const originalRequest = error.config;
+    // ignore 401 errors for the login endpoint
+    if (
+      error.response?.status === 401 &&
+      !originalRequest.url.includes('/authorized/login')
+    ) {
       console.error('Unauthorized, logging out...');
       localStorage.removeItem('authToken');
       window.location.href = '/auth';
     }
+
     return Promise.reject(error);
   }
 );
+
 
 export default api;
