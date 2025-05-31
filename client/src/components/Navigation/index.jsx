@@ -1,14 +1,17 @@
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import api from "../../api";
-
 import './style.css';
 import Authorize from "../../Authorize";
-
+import MovieTile from "../MovieTile";
 
 const Navigation = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [movieFound, setMovieFound] = useState(null);
   const [submitError, setSubmitError] = useState("");
+  const location = useLocation();
+
+  const isHomePage = location.pathname === '/home';
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -22,82 +25,117 @@ const Navigation = () => {
       setSearchQuery(query);
 
       if (query === "") {
-        setSubmitError("Search query cannot be empty");
-        console.error("Search query cannot be empty");
         return;
       }
+
       const response = await api.get(`/common/get_movie/title/${encodeURIComponent(query)}`);
 
-      if (!response.data) {
-        throw new Error("No data received from server");
-      }
-      if (!response.data.movie) {
-        setSubmitError("Movie not found");
+      if (!response.data?.movie) {
         throw new Error("Movie not found");
       }
-      console.log("Movie found:", response.data.movie);
-      // TODO: Show movie details in a modal or redirect to a movie details page
-    }
-    catch (error) {
+
+      setMovieFound(response.data.movie);
+      setSubmitError("");
+    } catch (error) {
       setSubmitError("Movie not found");
-      console.error("Error during search:", error.message);
+      setMovieFound(null);
     }
   }
 
+  const clearSearch = () => {
+    setSearchQuery("");
+    setMovieFound(null);
+    setSubmitError("");
+  }
+
   return (
-    <nav className="navigation">
-      <div className="logo">
-        <h1>Absolute Cinema</h1>
-      </div>
-      <form onSubmit={handleSearchSubmit} className="search-form">
+    <div className="navigation-container">
+      <nav className="navigation">
+        <div className="logo">
+          <h1>Absolute Cinema</h1>
+        </div>
+
         <Authorize requiredRoles={['USER', 'GUEST']}>
-          <div className="submit-error">{submitError}</div>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Search..."
-            className="search-input"
-          />
-          <button type="submit" className="search-button" onSubmit={handleSearchSubmit}>Search</button>
+          {isHomePage && (
+            <form onSubmit={handleSearchSubmit} className="search-form">
+              <div className="search-group">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  placeholder="Search movie title..."
+                  className="search-input"
+                />
+                {movieFound ? (
+                  <button
+                    type="button"
+                    className="search-button clear"
+                    onClick={clearSearch}
+                  >
+                    ✕
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="search-button submit"
+                  >
+                    Search
+                  </button>
+                )}
+              </div>
+              {submitError && <div className="submit-error">{submitError}</div>}
+            </form>
+          )}
         </Authorize>
-        <Authorize requiredRoles={['ANY']}>
-          <input
-            type="button"
-            className="home-button"
-            value="Home"
-            onClick={() => window.location.href = '/'}
-          />
-        </Authorize>
-        <Authorize requiredRoles={['ADMIN', 'USER']}>
-          <input
-            type="button"
-            className="profile-button"
-            value="Profile"
-            onClick={() => window.location.href = '/profile'}
-          />
-          <input
-            type="button"
-            className="logout-button"
-            value="Logout"
-            onClick={() => {
-              localStorage.removeItem('authToken'); // Clear the auth token
-              console.log("User logged out");
-              window.location.href = '/home';
-            }}
-          />
-        </Authorize>
-        <Authorize requiredRoles={['GUEST']}>
-          <input
-            type="button"
-            className="login-button"
-            value="Login"
-            onClick={() => window.location.href = '/auth'}
-          />
-        </Authorize>
-      </form>
-    </nav>
+
+        <div className="nav-buttons">
+          <Authorize requiredRoles={['ANY']}>
+            <button
+              className="nav-button home"
+              onClick={() => window.location.href = '/'}
+            >
+              Home
+            </button>
+          </Authorize>
+
+          <Authorize requiredRoles={['ADMIN', 'USER']}>
+            <button
+              className="nav-button profile"
+              onClick={() => window.location.href = '/profile'}
+            >
+              Profile
+            </button>
+            <button
+              className="nav-button logout"
+              onClick={() => {
+                localStorage.removeItem('authToken');
+                window.location.href = '/home';
+              }}
+            >
+              Logout
+            </button>
+          </Authorize>
+
+          <Authorize requiredRoles={['GUEST']}>
+            <button
+              className="nav-button login"
+              onClick={() => window.location.href = '/auth'}
+            >
+              Login
+            </button>
+          </Authorize>
+        </div>
+      </nav>
+
+      {movieFound && (
+        <div className="search-results-container">
+          <div className="search-results-card">
+            <MovieTile movie={movieFound} />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
-export default Navigation
+export default Navigation;
