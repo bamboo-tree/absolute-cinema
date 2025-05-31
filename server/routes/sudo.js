@@ -109,6 +109,7 @@ router.put('/update_movie/:id', authenticateToken, authorizeAdmin, upload.fields
     if (req.body.directors) {
       updateData.directors = processNames(req.body.directors);
     }
+
     // cast
     if (req.body.cast) {
       updateData.cast = processNames(req.body.cast);
@@ -124,28 +125,28 @@ router.put('/update_movie/:id', authenticateToken, authorizeAdmin, upload.fields
     }
 
     // gallery
-    let currentGallery = [...movie.gallery];
+    let updatedGallery = [...movie.gallery];
 
     // remove old images from gallery
     if (req.body.removeGallery) {
-      const removeIndexes = JSON.parse(req.body.removeGallery);
-      removeIndexes.sort((a, b) => b - a); // usuwaj od końca, by nie przestawić indeksów
+      const filesToRemove = JSON.parse(req.body.removeGallery);
 
-      removeIndexes.forEach(index => {
-        const filePath = currentGallery[index];
-        if (filePath) {
-          const absolutePath = path.join(__dirname, '../public', filePath);
-          if (fs.existsSync(absolutePath)) fs.unlinkSync(absolutePath);
-          currentGallery.splice(index, 1);
+      filesToRemove.forEach(filename => {
+        const index = updatedGallery.indexOf(filename);
+        if (index !== -1) {
+          const filePath = path.join(__dirname, '../public', updatedGallery[index]);
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+          updatedGallery.splice(index, 1);
         }
       });
     }
 
+    // add new images to gallery
     if (req.files?.gallery) {
       const newImages = req.files.gallery.map(file => `/uploads/movies/${file.filename}`);
-      currentGallery = [...currentGallery, ...newImages];
+      updatedGallery = [...updatedGallery, ...newImages];
     }
-
+    // update gallery in updateData
     updateData.gallery = updatedGallery;
 
     // update movie data
@@ -155,7 +156,7 @@ router.put('/update_movie/:id', authenticateToken, authorizeAdmin, upload.fields
       { new: true, runValidators: true }
     ).select('-__v');
 
-    res.status(200).json({ message: "Movie updated successfully" });
+    res.status(200).json({ message: "Movie updated successfully", movie: updatedMovie });
     console.log("Movie updated successfully")
   }
   catch (error) {
@@ -165,12 +166,19 @@ router.put('/update_movie/:id', authenticateToken, authorizeAdmin, upload.fields
     if (req.files) {
       Object.values(req.files).forEach(files => {
         files.forEach(file => {
-          if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+          try {
+            if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+          } catch (err) {
+            console.error("Error deleting file:", err);
+          }
         });
       });
     }
 
-    res.status(500).json({ message: "Failed to update movie" });
+    res.status(500).json({
+      message: "Failed to update movie",
+      error: error.message
+    });
   }
 })
 
