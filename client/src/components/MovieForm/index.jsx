@@ -62,8 +62,8 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
       isValid = false;
-    } else if (formData.description.length > 500) {
-      newErrors.description = 'Description cannot exceed 500 characters';
+    } else if (formData.description.length > 1000) {
+      newErrors.description = 'Description cannot exceed 1000 characters';
       isValid = false;
     }
 
