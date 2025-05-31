@@ -1,28 +1,28 @@
 import { useState, useEffect } from 'react';
-import api from '../api';
-import '../styles/manage.css';
+
+import api from '../../api';
+import './style.css';
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState(null);
 
 
-  // Fetch users
-  const fetchUsers = async () => {
-    try {
-      const response = await api.get('/sudo/get_all_users', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      setUsers(response.data.users);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch users');
-    }
-  };
-
   // Fetch users on component mount
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await api.get('/sudo/get_all_users', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+        setUsers(response.data.users);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch users');
+      }
+    };
+
     fetchUsers();
   }, []);
 
@@ -42,7 +42,7 @@ const ManageUsers = () => {
     }
   }
 
-  // Render error if exists
+  // Render error if exists, not ideal but good enough
   if (error) {
     return <div className="error">Error: {error}</div>;
   }
@@ -50,7 +50,6 @@ const ManageUsers = () => {
   return (
     <div className="list-container">
       <h2>Manage Users</h2>
-
       {users.length === 0 ? (
         <p>No users found</p>
       ) : (
@@ -76,7 +75,7 @@ const ManageUsers = () => {
                 <td>
                   {user.role === 'ADMIN' ? (
                     <button className="button" disabled>
-                      Delete
+                      Delete*
                     </button>
                   ) : (
                     <button
@@ -92,6 +91,7 @@ const ManageUsers = () => {
           </tbody>
         </table>
       )}
+      <i className="note">*Admin users cannot be deleted</i>
     </div>
   );
 };

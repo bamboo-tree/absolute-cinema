@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import api from '../api';
-
-import '../styles/movieForm.css';
+import api from '../../api';
+import './style.css';
 
 const MovieForm = ({ movieId, onCancel, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -12,6 +11,16 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
     releaseDate: '',
     thumbnail: '',
     gallery: []
+  });
+
+  const [errors, setErrors] = useState({
+    title: '',
+    description: '',
+    directors: '',
+    cast: '',
+    releaseDate: '',
+    thumbnail: '',
+    gallery: ''
   });
 
   const [loading, setLoading] = useState(true);
@@ -26,64 +35,142 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
   const [directorsInput, setDirectorsInput] = useState('');
   const [castInput, setCastInput] = useState('');
 
-  // Cache for images
-  const imageCache = useRef({
-    thumbnails: new Map(),
-    gallery: new Map()
-  });
+  // Validate form data
+  const validateForm = () => {
+    const newErrors = {
+      title: '',
+      description: '',
+      directors: '',
+      cast: '',
+      releaseDate: '',
+      thumbnail: '',
+      gallery: ''
+    };
 
-  // Function to build full image URL
+    let isValid = true;
+
+    // Validate title
+    if (!formData.title.trim()) {
+      newErrors.title = 'Title is required';
+      isValid = false;
+    } else if (formData.title.length > 100) {
+      newErrors.title = 'Title cannot exceed 100 characters';
+      isValid = false;
+    }
+
+    // Validate description
+    if (!formData.description.trim()) {
+      newErrors.description = 'Description is required';
+      isValid = false;
+    } else if (formData.description.length > 500) {
+      newErrors.description = 'Description cannot exceed 500 characters';
+      isValid = false;
+    }
+
+    // Validate directors
+    if (formData.directors.length === 0) {
+      newErrors.directors = 'At least one director is required';
+      isValid = false;
+    } else if (formData.directors.some(d => d.length > 50)) {
+      newErrors.directors = 'Director names cannot exceed 50 characters';
+      isValid = false;
+    }
+
+    // Validate cast
+    if (formData.cast.length === 0) {
+      newErrors.cast = 'At least one cast member is required';
+      isValid = false;
+    } else if (formData.cast.some(c => c.length > 50)) {
+      newErrors.cast = 'Cast member names cannot exceed 50 characters';
+      isValid = false;
+    }
+
+    // Validate release date
+    if (!formData.releaseDate) {
+      newErrors.releaseDate = 'Release date is required';
+      isValid = false;
+    } else {
+      const releaseDate = new Date(formData.releaseDate);
+      const currentDate = new Date();
+      if (releaseDate > currentDate) {
+        newErrors.releaseDate = 'Release date cannot be in the future';
+        isValid = false;
+      }
+    }
+
+    // Validate thumbnail
+    if (!formData.thumbnail && !thumbnailFile) {
+      newErrors.thumbnail = 'Thumbnail is required';
+      isValid = false;
+    }
+
+    // Validate gallery images
+    if (formData.gallery.length === 0 && galleryFiles.length === 0) {
+      newErrors.gallery = 'At least one gallery image is required';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // build image URL based on the path - ok
   const buildImageUrl = (path) => {
+    console.log(process.env.REACT_APP_BASE_URL);
     if (!path) return '';
     if (path.startsWith('http')) return path;
     if (path.startsWith('/uploads/movies/')) {
-      return `${process.env.REACT_APP_API_BASE_URL || ''}${path}`;
+      return `${process.env.REACT_APP_BASE_URL}${path}`;
     }
-    return `${process.env.REACT_APP_API_BASE_URL || ''}/uploads/movies/${path}`;
+    return `${process.env.REACT_APP_BASE_URL}/uploads/movies/${path}`;
   };
 
-  // Fetch and cache images
-  const fetchAndCacheImage = async (path) => {
-    const url = buildImageUrl(path);
-    if (!url) return null;
+  // Cache for images
+  const imageCache = useRef({
+    thumbnails: new Map(),
+    gallery: new Map(),
+    cleanup: () => {
+      imageCache.current.thumbnails.forEach(url => URL.revokeObjectURL(url));
+      imageCache.current.gallery.forEach(url => URL.revokeObjectURL(url));
+      imageCache.current.thumbnails.clear();
+      imageCache.current.gallery.clear();
+    }
+  });
 
-    if (imageCache.current.thumbnails.has(url) || imageCache.current.gallery.has(url)) {
-      return url;
+  // Fetch images
+  const cacheImage = async (path, isThumbnail = false) => {
+    if (!path) return '';
+
+    const cache = isThumbnail
+      ? imageCache.current.thumbnails
+      : imageCache.current.gallery;
+
+    if (cache.has(path)) {
+      return cache.get(path);
     }
 
     try {
+      const url = buildImageUrl(path);
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Image not found');
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const blob = await response.blob();
       const objectUrl = URL.createObjectURL(blob);
 
-      if (url.includes('thumbnail')) {
-        imageCache.current.thumbnails.set(url, objectUrl);
-      } else {
-        imageCache.current.gallery.set(url, objectUrl);
-      }
-
+      cache.set(path, objectUrl);
       return objectUrl;
     } catch (error) {
-      console.error('Error caching image:', error);
-      return null;
+      console.error('Error fetching image:', error);
+      return '/images/placeholder.png';
     }
   };
 
   // Cleaning cache on unmount
   useEffect(() => {
-    return () => {
-      // Zwolnienie URL-i obiektów
-      imageCache.current.thumbnails.forEach(url => URL.revokeObjectURL(url));
-      imageCache.current.gallery.forEach(url => URL.revokeObjectURL(url));
-    };
-  }, []);
-
-  // Load movie data if movieId is provided
-  useEffect(() => {
     const loadMovieData = async () => {
-
       if (!movieId) {
         setLoading(false);
         return;
@@ -93,26 +180,19 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
         const response = await api.get(`/common/get_movie/${movieId}`);
         const movie = response.data.movie;
 
-        // Fetch and cache thumbnail
-        const thumbUrl = await fetchAndCacheImage(movie.thumbnail);
+        // Load and cache thumbnail
+        const thumUrl = movie.thumbnail
+          ? await cacheImage(movie.thumbnail, true)
+          : '/images/placeholder.png';
 
-        // Fetch and cache gallery images
-        const galleryUrlsSet = new Set();
-        const galleryUrls = [];
-
-        for (const imgPath of movie.gallery) {
-          const cachedUrl = await fetchAndCacheImage(imgPath);
-          const finalUrl = cachedUrl || buildImageUrl(imgPath);
-
-          if (finalUrl && !galleryUrlsSet.has(finalUrl)) {
-            galleryUrlsSet.add(finalUrl);
-            galleryUrls.push(finalUrl);
-          }
-        }
+        // Load and cache gallery images
+        const galleryUrls = await Promise.all(
+          movie.gallery.map(img => cacheImage(img))
+        );
 
         setFormData({
           ...movie,
-          thumbnail: thumbUrl || buildImageUrl(movie.thumbnail),
+          thumbnail: thumUrl,
           gallery: galleryUrls,
           releaseDate: movie.releaseDate.split('T')[0]
         });
@@ -122,10 +202,15 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
       } finally {
         setLoading(false);
       }
-    };
-
+    }
     loadMovieData();
+
+    return () => {
+      // Cleanup image cache on unmount
+      imageCache.current.cleanup();
+    };
   }, [movieId]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -133,8 +218,7 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
   };
 
   const handleArrayAdd = (field, input, setInput) => {
-    if (input.trim() === '') return;
-
+    if (!input.trim()) return;
     setFormData(prev => ({
       ...prev,
       [field]: [...prev[field], input.trim()]
@@ -149,41 +233,41 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
     }));
   };
 
-  const previewImage = (file) => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleThumbnailChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setThumbnailFile(file);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFormData(prev => ({ ...prev, thumbnail: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    setThumbnailFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData(prev => ({ ...prev, thumbnail: reader.result }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleGalleryChange = (e) => {
     const files = Array.from(e.target.files);
-    setGalleryFiles(prev => [...prev, ...files]);
+    if (!files.length) return;
 
     const newUrls = files.map(file => URL.createObjectURL(file));
-    const cleanGallery = newUrls.filter(url => url && typeof url === 'string');
-
-    setFormData(prev => ({ ...prev, gallery: [...prev.gallery, ...cleanGallery] }));
+    setGalleryFiles(prev => [...prev, ...files]);
+    setFormData(prev => ({
+      ...prev,
+      gallery: [...prev.gallery, ...newUrls]
+    }));
   };
 
   const removeGalleryImage = (index) => {
-    const isNewImage = formData.gallery[index]?.startsWith('blob:') || formData.gallery[index]?.startsWith('data:');
+    const imageUrl = formData.gallery[index];
 
-    if (!isNewImage) {
-      setFilesToRemove(prev => [...prev, index]);
+    // Check if it's a server image (has uploads/movies in path)
+    if (imageUrl.includes('/uploads/movies/')) {
+      // Extract filename from URL
+      const filename = imageUrl.split('/uploads/movies/')[1];
+      setFilesToRemove(prev => [...prev, filename]);
+    } else if (imageUrl.startsWith('blob:')) {
+      // Revoke blob URL for new images
+      URL.revokeObjectURL(imageUrl);
     }
 
     setFormData(prev => ({
@@ -195,6 +279,11 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -208,7 +297,6 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
       formDataToSend.append('cast', formData.cast.join(','));
       formDataToSend.append('releaseDate', formData.releaseDate);
 
-      // Add thumbnail and gallery files
       if (thumbnailFile) {
         formDataToSend.append('thumbnail', thumbnailFile);
       }
@@ -220,23 +308,18 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
       // If editing an existing movie, include files to remove
       if (movieId && filesToRemove.length > 0) {
         formDataToSend.append('removeGallery', JSON.stringify(filesToRemove));
+        console.log('Removing gallery indexes:', filesToRemove);
       }
 
-      if (movieId) {
-        await api.put(`/sudo/update_movie/${movieId}`, formDataToSend, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-      } else {
-        await api.post('/sudo/add_movie', formDataToSend, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-      }
+      const endpoint = movieId ? `/sudo/update_movie/${movieId}` : '/sudo/add_movie';
+      await api(endpoint, {
+        method: movieId ? 'PUT' : 'POST',
+        data: formDataToSend,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
 
       setSuccess(true);
       setTimeout(() => {
@@ -255,6 +338,7 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
   return (
     <div className="movie-form-container">
       <h2>{movieId ? 'Edit Movie' : 'Add New Movie'}</h2>
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Title*:</label>
@@ -263,8 +347,8 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
             name="title"
             value={formData.title}
             onChange={handleInputChange}
-            required
           />
+          {errors.title && <span className="error-text">{errors.title}</span>}
         </div>
 
         <div className="form-group">
@@ -273,8 +357,8 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            required
           />
+          {errors.description && <span className="error-text">{errors.description}</span>}
         </div>
 
         <div className="form-group">
@@ -293,6 +377,7 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
               Add
             </button>
           </div>
+          {errors.directors && <span className="error-text">{errors.directors}</span>}
           <div className="array-items">
             {formData.directors.map((director, index) => (
               <div key={index} className="array-item">
@@ -324,6 +409,7 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
               Add
             </button>
           </div>
+          {errors.cast && <span className="error-text">{errors.cast}</span>}
           <div className="array-items">
             {formData.cast.map((member, index) => (
               <div key={index} className="array-item">
@@ -346,13 +432,14 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
             name="releaseDate"
             value={formData.releaseDate}
             onChange={handleInputChange}
-            required
           />
+          {errors.releaseDate && <span className="error-text">{errors.releaseDate}</span>}
         </div>
 
         <div className="form-group">
           <label>Thumbnail*:</label>
           <input type="file" accept="image/*" onChange={handleThumbnailChange} />
+          {errors.thumbnail && <span className="error-text">{errors.thumbnail}</span>}
           {formData.thumbnail && (
             <div className="image-preview">
               <img
@@ -376,28 +463,22 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
             onChange={handleGalleryChange}
             multiple
           />
+          {errors.gallery && <span className="error-text">{errors.gallery}</span>}
           <div className="gallery-preview">
             {formData.gallery.map((img, index) => (
               <div key={index} className="gallery-item">
-                {img && (
-                  <img
-                    src={img}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = '/images/placeholder.png';
-                    }}
-                    alt={`Gallery item ${index}`}
-                  />
-                )}
-                {!img && (
-                  <img
-                    src="/images/placeholder.png"
-                    alt="Placeholder"
-                  />
-                )}
+                <img
+                  src={img}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/images/placeholder.png';
+                  }}
+                  alt={`Gallery item ${index}`}
+                />
                 <button
                   type="button"
                   onClick={() => removeGalleryImage(index)}
+                  aria-label='Remove image'
                 >
                   ×
                 </button>
@@ -425,13 +506,13 @@ const MovieForm = ({ movieId, onCancel, onSuccess }) => {
           </button>
         </div>
       </form>
+
+      {error && <div className="error-message">{error}</div>}
       {success && (
         <div className="success-message">
           {movieId ? 'Movie updated successfully!' : 'Movie added successfully!'}
         </div>
       )}
-
-      {error && <div className="error-message">{error}</div>}
     </div>
   );
 };

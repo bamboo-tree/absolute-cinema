@@ -1,16 +1,20 @@
 import { useState } from "react";
 
-import ManageUsers from "./ManageUsers";
-import ManageMovies from "./ManageMovies";
-import MovieForm from "./MovieForm";
+import ManageUsers from "../ManageUsers";
+import MovieForm from "../MovieForm";
+import ManageMovies from "../ManageMovies";
 
-import "../styles/adminDashboard.css";
-
+import "./style.css";
 
 
 const AdminaDashboard = () => {
-
   const [actionName, setActionName] = useState("manage-users");
+  const [selectedMovieId, setSelectedMovieId] = useState(null);
+
+  const handleEditMovie = (movieId) => {
+    setSelectedMovieId(movieId);
+    setActionName("edit-movie");
+  }
 
   return (
     <div className="admin-dashboard">
@@ -30,12 +34,24 @@ const AdminaDashboard = () => {
       </div>
       <div>
         {actionName === "manage-users" && <ManageUsers />}
-        {actionName === "manage-movies" && <ManageMovies />}
+        {actionName === "manage-movies" && (
+          <ManageMovies onEditMovie={handleEditMovie} />
+        )}
         {actionName === "add-movie" && (
           <MovieForm
             onCancel={() => setActionName("manage-movies")}
             onSuccess={() => {
               setActionName("manage-movies");
+            }}
+          />
+        )}
+        {actionName === "edit-movie" && (
+          <MovieForm
+            movieId={selectedMovieId}
+            onCancel={() => setActionName("manage-movies")}
+            onSuccess={() => {
+              setActionName("manage-movies");
+              setSelectedMovieId(null);
             }}
           />
         )}

@@ -1,6 +1,6 @@
 /* Movie Form Container */
 .movie-form-container {
-  background-color: var(--bg-200);
+  background-color: var(--bg-100);
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -232,6 +232,22 @@
 
 .cancel-button:hover:not(:disabled) {
   background-color: var(--bg-100);
+}
+
+.error-text {
+  color: var(--primary-100);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+input.error,
+textarea.error {
+  border-color: var(--primary-100);
 }
 
 /* Responsive Adjustments */

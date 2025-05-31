@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react';
-import api from '../api';
-import '../styles/manage.css';
+import api from '../../api';
+import './style.css';
 
-// import MovieForm from './MovieForm';
-
-const ManageMovies = () => {
+const ManageMovies = ({ onEditMovie }) => {
   const [movies, setMovies] = useState([]);
-  // const [isEdit, setIsEdit] = useState(false);
   const [error, setError] = useState(null);
-  // const [selectedMovieId, setSelectedMovieId] = useState(null);
 
   // Fetch users
   const fetchMovies = async () => {
@@ -41,11 +37,9 @@ const ManageMovies = () => {
     }
   }
 
-  // Edit movies
-  // const handleEditMovie = async (id) => {
-  //   setIsEdit(true);
-  //   setSelectedMovieId(id);
-  // }
+  const handleEditMovie = (movieId) => {
+    onEditMovie(movieId);
+  }
 
   // Render error if exists
   if (error) {
@@ -55,16 +49,6 @@ const ManageMovies = () => {
   return (
     <div className="list-container">
       <h2>Manage Movies</h2>
-      {/* Edit existing movie */}
-      {/* {isEdit && (
-        <MovieForm
-          movieId={selectedMovieId}
-          onCancel={() => setIsEdit(false)}
-          onSuccess={() => {
-            setIsEdit(false);
-          }}
-        />
-      )} */}
 
       {/* Display movies */}
       {(movies.length === 0) ? (
@@ -76,7 +60,7 @@ const ManageMovies = () => {
               <th>Title</th>
               <th>Year</th>
               <th>Id</th>
-              {/* <th>Edit</th> */}
+              <th>Edit</th>
               <th>Delete</th>
             </tr>
           </thead>
@@ -86,13 +70,13 @@ const ManageMovies = () => {
                 <td>{movie.title}</td>
                 <td>{movie.releaseDate.split('T')[0]}</td>
                 <td>{movie._id}</td>
-                {/* <td>
+                <td>
                   <button
                     className="button"
                     onClick={() => handleEditMovie(movie._id)}>
                     Edit
                   </button>
-                </td> */}
+                </td>
                 <td>
                   <button
                     className="button"
