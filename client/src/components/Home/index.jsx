@@ -5,7 +5,7 @@ import api from "../../api";
 import Navigation from "../Navigation"
 import Authorize from "../../Authorize"
 import AdminaDashboard from "../AdminDashboard"
-import MovieList from "../MoviesList"
+import MovieList from "../MovieList"
 
 
 const Home = () => {

@@ -1,30 +1,53 @@
 import { useEffect, useState } from 'react';
 
-import '../styles/reviewForm.css';
+import './style.css';
 
-const ReviewForm = ({ onSubmit, onCancel, initialComment = '', initalRating = 5 }) => {
+const ReviewForm = ({ onSubmit, onCancel, initialComment, initalRating, isEditing, onDelete }) => {
   const [comment, setComment] = useState('');
-  const [rating, setRating] = useState(5); // default rating
+  const [rating, setRating] = useState();
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setComment(initialComment);
     setRating(initalRating);
   }, [initialComment, initalRating]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (!comment.trim()) {
       setError('Comment cannot be empty');
       return;
     }
+
     if (rating < 1 || rating > 10) {
       setError('Rating must be between 1 and 10');
       return;
     }
-    setError('');
-    onSubmit({ comment, rating });
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit({ comment, rating });
+      window.location.reload();
+    } catch (err) {
+      setError(err.message || 'Failed to submit review');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete your review?')) {
+      try {
+        await onDelete();
+        window.location.reload();
+      } catch (err) {
+        setError('Failed to delete review');
+      }
+    }
+  }
 
 
   return (
@@ -61,16 +84,33 @@ const ReviewForm = ({ onSubmit, onCancel, initialComment = '', initalRating = 5 
       {error && <p className="form-error">{error}</p>}
 
       <div className="form-actions">
-        <button type="submit" className="submit-button">
-          {initialComment ? 'Update Review' : 'Submit Review'}
+        <button
+          type="submit"
+          className="submit-button"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Processing...' : (isEditing ? 'Update Review' : 'Submit Review')}
         </button>
+
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
             className="cancel-button"
+            disabled={isSubmitting}
           >
             Cancel
+          </button>
+        )}
+
+        {isEditing && onDelete && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="delete-button"
+            disabled={isSubmitting}
+          >
+            Delete Review
           </button>
         )}
       </div>

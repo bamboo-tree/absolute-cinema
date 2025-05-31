@@ -1,6 +1,6 @@
-import MovieTile from './MovieTile';
+import MovieTile from '../MovieTile';
 
-import '../styles/moviesList.css';
+import './style.css';
 
 const MovieList = ({ movies }) => {
   if (movies.length === 0) {
