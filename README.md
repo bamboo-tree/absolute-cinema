@@ -1,87 +1,140 @@
-# Absolute Cinema _for movie lovers and haters_
+# 🎬 Absolute Cinema — *for movie lovers and haters*
 
-## Overwiew
-Absolute Cinema is a simple online service that allows users to submit reviews for various movies. This project was completed as a final project for the subject of _Web Application Frameworks_.
+## 📝 Overview
 
-- Wyszczególnione są 3 role ADMIN, USER, GUEST pozwalające na wporwadzenie odpowiednich zabezpieczeń oraz izolacji endpointów. Weryfikacja odbywa się zarówno po stronie klienta jak i serwera.
-- Użytkownicy pod tymi samymi adresami mają wyświetlane właściwe dla siebie treści
-- Autoryzacja dostępu do API na podstawie tokenu JWT
-- Strona klienta jest towrzona z komponentów react
-- Formularze posiadają walidację danych po stronie klienta i serwera
+**Absolute Cinema** is a lightweight web application that allows users to browse movies and write reviews. It was developed as a final project for the course **Web Application Frameworks**.
 
+Key features:
+- 🔐 Role-based access control (ADMIN, USER, GUEST) implemented on both frontend and backend.
+- 🛡️ Endpoint protection and UI content visibility adapted to the logged-in user's role.
+- 🔑 JWT-based authentication and authorization.
+- ⚛️ Frontend built with React components.
+- ✅ Input validation on both client and server sides.
 
-Funkcjonalności:
+---
 
-GUEST:
-- Przeglądanie filmów i recenzji
-- Możliwość wyszukiwania filmu po tytule
-- Możliwość założenia konta użytkownika
+## 🛠️ Technologies Used
 
-USER:
-- Przeglądanie filmów i recenzji
-- Możliwość wyszukiwania filmu po tytule
-- Dodawanie własnych recenzji z możliwością edycji i usunięcia
-- Zarządzanie profilem: zmiana danych osobowych lub hasła
+- ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white&style=flat-square) **React** – frontend  
+- ![Node.js](https://img.shields.io/badge/-Node.js-339933?logo=node.js&logoColor=white&style=flat-square) **Node.js** – backend runtime  
+- ![Express](https://img.shields.io/badge/-Express-000000?logo=express&logoColor=white&style=flat-square) **Express** – backend framework  
+- ![MongoDB](https://img.shields.io/badge/-MongoDB-47A248?logo=mongodb&logoColor=white&style=flat-square) **MongoDB** – database  
+- ![JWT](https://img.shields.io/badge/-JWT-000000?logo=jsonwebtokens&logoColor=white&style=flat-square) **JWT** – authorization  
+- ![CSS3](https://img.shields.io/badge/-CSS3-1572B6?logo=css3&logoColor=white&style=flat-square) **CSS3** – styling
 
-ADMIN:
-- Nie posiada możliwości przeglądania filmów tak jak GUEST i USER
-- Dostęp do panelu administratora
-- Zarządzanie użytkownikami, możliwość usunięcia
-- Zarządzanie filmami, możliwość usunięcia i edycji danych o filmie
-- Dodawanie nowych filmów do serwisu
+---
 
-👤 User Roles and Functionalities
-Functionality	GUEST 👤	USER 🧑	ADMIN 🛠️
-Browse movies and reviews	✅	✅	❌
-Search for movies by title	✅	✅	❌
-Register an account	✅	❌	❌
-Submit, edit, and delete own reviews	❌	✅	❌
-Manage profile (update info, change pwd)	❌	✅	❌
-Access admin dashboard	❌	❌	✅
-Manage users (view/delete)	❌	❌	✅
-Manage movies (edit/delete)	❌	❌	✅
-Add new movies	❌	❌	✅
+## 🚀 How to Run the Project
 
-Uruchomienie:
-- Sklonować repozytorium git clone git@github.com:bamboo-tree/absolute-cinema.git
-- Przejść do lokalizacji pliku cd absolute-cinema
-- Uruchomienie bazy danych mongo
-  - sudo systemctl start mongodb (linux)
-  - korzystając z aplikacji desktopowej (windows)
-- Uruchomienie serwera: 
-  - cd ./server
-  - npm install
-  - node server.js
-- Uruchomienie klienta:
-  - cd ./client
-  - npm install
-  - npm start
-- Przejście na stonę http://localhost:3000/home
+1. **Clone the repository:**
+   ```bash
+   git clone git@github.com:bamboo-tree/absolute-cinema.git
+   cd absolute-cinema
+   ```
 
-(pliki .env są dodane jako przykład w celu uruchomienia serwisu, normalnie nie powinny się tutaj znaleźć ze względów bezpieczeństwa, jednak jako że jest to projekt w celach naukowych i żadne dane wrażliwe nie są udostępniane są one dołączone do repozytorium)
+2. **Start MongoDB:**
+   - **Linux:**
+     ```bash
+     sudo systemctl start mongodb
+     ```
+   - **Windows:**
+     Use a local MongoDB client (e.g., MongoDB Compass or run via installed MongoDB service).
 
+3. **Start the backend server:**
+   ```bash
+   cd server
+   npm install
+   node server.js
+   ```
 
+4. **Start the frontend client:**
+   ```bash
+   cd ../client
+   npm install
+   npm start
+   ```
 
+5. **Open the app in your browser:**
+   ```
+   http://localhost:3000/home
+   ```
 
-## Tech Stack
-__Client:__
-  - Java Script
-  - HTML/CSS
-  - React
+> ℹ️ Example `.env` files are included in the repository for testing and educational purposes only. In a production environment, these should be kept private and excluded from version control.
 
-__Server:__
-  - Java Script
-  - NodeJS
-  - Express
-  - MongoDB
+---
 
-## Wnioski
-Czego się nauczyłem robiąc ten projekt:
-- zarządzanie komunikacją między serwerm a klientem
-- zabezpieczenia endpointów i weryfikacji uprawnień przy użyciu JWT
-- MERN stack
-- tworzenie komponentów w react
-- zarządzeni danymi crud
-- ...
+## 👤 User Roles and Functionalities
 
-Z każdym dniem jak robiłem ten projekt i poznawałem nowe rzeczy zauważałem błędy które wczesniej popełniałem. Nie uważam, że jest to idealny i w pełni funkcjonalny serwis, ponieważ z perspektywy czasu zacząłbym go robić w innej kolejności. Nie mnie jednak kiedyś trzeba powiedzieć stop. Doświadczenie, które tutaj zdobyłem na pewno przełoży się na lepszą jakość kolejnych projektów.
+| Functionality                              | GUEST 👤 | USER 🧑 | ADMIN 🛠️ |
+|-------------------------------------------|:--------:|:------:|:--------:|
+| Browse movies and reviews                  |   ✅     |   ✅   |    ❌    |
+| Search for movies by title                |   ✅     |   ✅   |    ❌    |
+| Register an account                       |   ✅     |   ❌   |    ❌    |
+| Submit, edit, and delete own reviews      |   ❌     |   ✅   |    ❌    |
+| Manage profile (update info, change pwd)  |   ❌     |   ✅   |    ❌    |
+| Access admin dashboard                    |   ❌     |   ❌   |    ✅    |
+| Manage users (view/delete)                |   ❌     |   ❌   |    ✅    |
+| Manage movies (edit/delete)               |   ❌     |   ❌   |    ✅    |
+| Add new movies                            |   ❌     |   ❌   |    ✅    |
+
+---
+
+## 📸 Screenshots
+
+![Home Page](./screenshots/home_page_guest.png) 
+_Home page - GUEST_
+![Reviews](./screenshots/reviews_guest.png)
+_Reviews - GUEST_
+![Edit Review](./screenshots/edit_review.png)
+_Edit review - USER_
+![Search Movie](./screenshots/movie_search.png)
+_Search movie - GUEST_
+![Profile](./screenshots/profile.png)
+_Profile - USER_
+![Manage Users](./screenshots/manage_users.png) 
+_Manage users - ADMIN_
+![Manage Movies](./screenshots/manage_movies.png)
+_Manage movies - ADMIN_
+![Add Movie](./screenshots/add_movie.png)
+_Add movie - ADMIN_
+![Edit Movie](./screenshots/edit_movie.png)
+_Edit movie - ADMIN_
+
+---
+
+## ⚠️ Known Issues
+
+- 🔁 Server does not currently auto-restart on file changes – consider using `nodemon` in development.
+- ❌ No rate-limiting implemented – could be vulnerable to spam or brute-force login attempts.
+- 🧪 Unit and integration testing is not implemented.
+
+---
+
+## 💡 Lessons Learned
+
+Working on Absolute Cinema allowed me to:
+- Deepen my understanding of full-stack application architecture.
+- Learn how to implement secure role-based authorization using JWT tokens.
+- Handle real-world issues like CORS policies, asynchronous data validation, and frontend-backend coordination.
+- Improve React component structuring and reuse.
+- Understand the importance of separating business logic between layers of the application.
+
+If I were to approach this project again, I would:
+- Add better error handling and toast notifications for UX.
+- Introduce pagination and sorting for improved performance and usability.
+- Use Redux or another state management library to simplify data flow.
+- Write automated tests for critical functionalities.
+
+---
+
+## 📁 Project Structure
+
+```
+absolute-cinema/
+├── client/          # React frontend
+├── server/          # Node.js/Express backend
+├── screenshots/     # UI screenshots
+└── README.md
+```
+
+![Absolute Cinema](./screenshots/absolute-cinema.jpg)
